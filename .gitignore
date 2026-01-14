@@ -1,8 +1,10 @@
-# Data - contains sensitive/private datasets
-data/
+# Raw data - contains sensitive/protected research data
+data/train/
+data/validation/
+data/test/
 
-# Keep .gitkeep files to preserve directory structure
-!data/.gitkeep
+# Extracted features are OK to commit
+# data/features/ is tracked
 
 # Python
 __pycache__/
