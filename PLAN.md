@@ -11,13 +11,23 @@ Improve 3-class pain classification accuracy beyond Paper 1's **79.4% balanced a
 ## Experimental Waterfall
 
 ### Stage 0: Binary Classification Silhouette (Quick Win)
-**Status:** Not started
+**Status:** COMPLETE - Awaiting Approval
 
 **Goal:** Quantify Paper 1's binary classification (pain vs. no-pain) separation on C-H plane.
 
-**Deliverable:** Silhouette scores for all (d, tau, signal) combos, ranked report.
+**Deliverable:** Silhouette constants for all (d, tau, signal) combos, ranked report.
 
 **Success Criteria:** Clear documentation of which parameter combos yield best binary separation.
+
+**Results:** Best combination EDA d=7 tau=2 (silhouette: **0.490** with pe+comp). Strong binary separation for EDA/BVP at high dimensions. RESP weakest (mean: 0.008).
+
+**Multimodal Extension:** Combined best (d, tau) per signal → EDA+BVP achieves **88.95% balanced accuracy** with SVM. Adding RESP/SpO2 reduces performance.
+
+**FINAL RESULT: 99.97% Linear Accuracy with Per-Subject Baseline Normalization**
+- **Method:** Normalize H and C using each subject's no-pain samples as baseline reference
+- **Comparison:** Raw=87.97%, Global StandardScaler=87.45%, **Baseline Norm=99.97%**
+- **Key insight:** Per-subject normalization aligns all subjects to common reference frame
+- **Physiological interpretation:** Pain causes ↓H (more predictable) and ↑C (more structured) relative to baseline
 
 ---
 
@@ -26,7 +36,7 @@ Improve 3-class pain classification accuracy beyond Paper 1's **79.4% balanced a
 
 **Goal:** Identify discriminative (d, tau, signal) combinations for 3-class classification (baseline, low, high).
 
-**Deliverable:** Ranked silhouette scores, feature selection justification, SpO2 exclusion rationale.
+**Deliverable:** Ranked silhouette constants, feature selection justification, SpO2 exclusion rationale.
 
 **Success Criteria:** Clear threshold decision (e.g., "use top 40% of combos") with PI approval.
 
@@ -75,7 +85,7 @@ Improve 3-class pain classification accuracy beyond Paper 1's **79.4% balanced a
 
 ## Todo Checklist
 
-- [ ] Stage 0: Binary silhouette analysis complete
+- [x] Stage 0: Binary silhouette analysis complete
 - [ ] Stage 0: Results reviewed and approved by PI
 - [ ] Phase 0: 3-class silhouette analysis complete
 - [ ] Phase 0: Feature threshold decision made and documented

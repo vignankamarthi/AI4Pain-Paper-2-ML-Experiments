@@ -89,7 +89,7 @@ For best LOSO model:
 2. Color points by true class (baseline, low, high)
 3. Overlay predicted class as marker shape or border
 4. Highlight misclassified points
-5. Include per-signal silhouette scores in titles
+5. Include per-signal silhouette constants in titles
 
 ### Step 6: Final Model Selection
 1. Rank models by LOSO balanced accuracy

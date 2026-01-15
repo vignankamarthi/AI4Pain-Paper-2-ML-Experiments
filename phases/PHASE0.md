@@ -44,7 +44,7 @@ For each (d, tau, signal) combination:
 2. Create feature matrix (n_samples × 8 features)
 3. Compute silhouette coefficient for 3-class labels
 4. Use Euclidean distance metric
-5. Store: signal, dimension, tau, silhouette_score
+5. Store: signal, dimension, tau, silhouette_constant
 
 ---
 
@@ -58,16 +58,16 @@ For each of 60 (d, tau, signal) combinations:
 - Extract all 8 measures: PE, C, Fisher-Shannon, Fisher Info, Renyi PE, Renyi C, Tsallis PE, Tsallis C
 - Create feature matrix of shape (n_samples, 8)
 - Standardize features using StandardScaler (zero mean, unit variance)
-- Compute silhouette score: `silhouette_score(features, labels, metric='euclidean')`
-- Store: signal, dimension, tau, silhouette_score
+- Compute silhouette constant: `silhouette_constant(features, labels, metric='euclidean')`
+- Store: signal, dimension, tau, silhouette_constant
 
 ### Step 3: Ranking and Analysis
-- Sort all 60 combinations by silhouette score (descending)
+- Sort all 60 combinations by silhouette constant (descending)
 - Identify top 20 combinations
 - Compute distribution statistics (mean, std, quartiles)
-- Compute mean silhouette score per signal
-- Compute mean silhouette score per dimension
-- Compute mean silhouette score per tau
+- Compute mean silhouette constant per signal
+- Compute mean silhouette constant per dimension
+- Compute mean silhouette constant per tau
 
 ### Step 4: Feature Selection Threshold Analysis
 Generate threshold analysis:
@@ -85,10 +85,10 @@ For each threshold, calculate:
 
 ### Step 5: Visualization
 Generate visualizations:
-- Histogram of all 60 silhouette scores
-- Boxplot: silhouette scores by signal
-- Boxplot: silhouette scores by dimension
-- Boxplot: silhouette scores by tau
+- Histogram of all 60 silhouette constants
+- Boxplot: silhouette constants by signal
+- Boxplot: silhouette constants by dimension
+- Boxplot: silhouette constants by tau
 - Scatter plot: dimension vs. silhouette (colored by signal)
 - Heatmap: (dimension, tau) grid showing mean silhouette across signals
 
@@ -116,10 +116,10 @@ Create `3class_silhouette_report.md` containing:
 ## Output Requirements
 
 ### Files to Generate
-1. **`results/phase0_silhouette/3class_silhouette_scores.csv`**
-   - Columns: rank, signal, dimension, tau, silhouette_score
+1. **`results/phase0_silhouette/3class_silhouette_constants.csv`**
+   - Columns: rank, signal, dimension, tau, silhouette_constant
    - 60 rows (one per combination)
-   - Sorted by silhouette_score descending
+   - Sorted by silhouette_constant descending
 
 2. **`results/phase0_silhouette/threshold_analysis.csv`**
    - Columns: threshold_percent, n_combos, n_features, silhouette_min, silhouette_max, silhouette_mean
@@ -168,7 +168,7 @@ After Phase 0 completes, this is a CRITICAL CHECKPOINT. Human review required to
 
 ## Completion Criteria
 
-- [ ] All 60 silhouette scores computed
+- [ ] All 60 silhouette constants computed
 - [ ] All CSV files generated (scores, thresholds, statistics)
 - [ ] Report markdown file generated with recommendations
 - [ ] All 6 plots created
@@ -184,7 +184,7 @@ Approximately 10-15 minutes on M2 Pro MacBook.
 ---
 
 ## Success Indicators
-- Silhouette scores should be lower than binary (3-class is harder)
+- Silhouette constants should be lower than binary (3-class is harder)
 - Expected range: 0.15 - 0.50 for top combinations
 - SpO2 mean silhouette should be significantly lower (p less than 0.05)
 - Clear threshold recommendation emerges from analysis

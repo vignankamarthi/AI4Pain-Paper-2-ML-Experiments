@@ -43,7 +43,7 @@ For each (d, tau, signal) combination:
 1. Extract Permutation Entropy (H) and Statistical Complexity (C) values
 2. Plot points on 2D C-H plane (Complexity on y-axis, Entropy on x-axis)
 3. Color-code by binary class (pain vs. no-pain)
-4. Compute silhouette coefficient using `sklearn.metrics.silhouette_score`
+4. Compute silhouette coefficient using `sklearn.metrics.silhouette_constant`
 5. Use Euclidean distance metric
 
 ---
@@ -57,25 +57,24 @@ Load combined train, validation, and test sets for all signals. Extract binary c
 For each of 60 (d, tau, signal) combinations:
 - Extract H and C values for that specific combination
 - Create 2D array of shape (n_samples, 2) with [H, C] coordinates
-- Compute silhouette score: `silhouette_score(coordinates, labels, metric='euclidean')`
-- Store: signal, dimension, tau, silhouette_score
+- Compute silhouette constant: `silhouette_constant(coordinates, labels, metric='euclidean')`
+- Store: signal, dimension, tau, silhouette_constant
 
-### Step 3: Ranking and Analysis
-- Sort all 60 combinations by silhouette score (descending)
-- Identify top 10 combinations
-- Identify bottom 10 combinations
-- Compute mean silhouette score per signal (to assess SpO2 vs. others)
+3. **`results/stage0_binary/plots/`**
+   - `top1_combo_ch_plane.png` (best overall combination)
+   - `top2_combo_ch_plane.png` (second best combination)
+   - `top3_combo_ch_plane.png` (third best combination)
 
 ### Step 4: Visualization
 Generate C-H plane plots for:
-- Top 5 combinations (highest silhouette scores)
+- Top 5 combinations (highest silhouette constants)
 - One plot per signal showing best d/tau combo for that signal
 - Use different colors/markers for pain vs. no-pain classes
-- Include silhouette score in plot title
+- Include silhouette constant in plot title
 
 ### Step 5: Report Generation
 Create `binary_silhouette_report.md` containing:
-- Summary table of all 60 combinations ranked by silhouette score
+- Summary table of all 60 combinations ranked by silhouette constant
 - Statistical summary (mean, std, min, max silhouette by signal)
 - Top 10 combinations with interpretation
 - SpO2 performance analysis
@@ -86,10 +85,10 @@ Create `binary_silhouette_report.md` containing:
 ## Output Requirements
 
 ### Files to Generate
-1. **`results/stage0_binary/binary_silhouette_scores.csv`**
-   - Columns: rank, signal, dimension, tau, silhouette_score
+1. **`results/stage0_binary/binary_silhouette_constants.csv`**
+   - Columns: rank, signal, dimension, tau, silhouette_constant
    - 60 rows (one per combination)
-   - Sorted by silhouette_score descending
+   - Sorted by silhouette_constant descending
 
 2. **`results/stage0_binary/binary_silhouette_report.md`**
    - Executive summary
@@ -110,7 +109,7 @@ Create `binary_silhouette_report.md` containing:
 
 ## Completion Criteria
 
-- [ ] All 60 silhouette scores computed
+- [ ] All 60 silhouette constants computed
 - [ ] CSV file generated with ranked results
 - [ ] Report markdown file generated
 - [ ] Minimum 5 C-H plane plots created
@@ -125,7 +124,7 @@ Approximately 5-10 minutes on M2 Pro MacBook.
 ---
 
 ## Success Indicators
-- Silhouette scores should be positive (greater than 0) for top combinations
+- Silhouette constants should be positive (greater than 0) for top combinations
 - EDA, BVP, RESP should show similar silhouette ranges (0.3-0.7 typical)
 - SpO2 should show consistently lower scores (less than 0.3) justifying exclusion
 - Visual inspection of C-H planes should show distinct clusters for pain vs. no-pain
