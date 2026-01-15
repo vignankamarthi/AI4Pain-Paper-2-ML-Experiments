@@ -1,15 +1,15 @@
 # Experiment Status Tracker
 
-**Last Updated:** 2026-01-14 18:05
+**Last Updated:** 2026-01-14 22:15
 
 ---
 
 ## Current Phase
-**STAGE0_BINARY_SILHOUETTE**
+**STAGE0_COMPLETE**
 
-**Status:** STAGE0_COMPLETE, AWAITING_APPROVAL
+**Status:** APPROVED, READY_FOR_PHASE1
 
-**Next Action:** Review Stage 0 results in `results/stage0_binary/` and approve to proceed to Phase 0.
+**Next Action:** Proceed to Phase 1 (3-class ensemble exploration) with per-subject baseline normalization.
 
 ---
 
@@ -17,22 +17,10 @@
 
 | Phase | Status | Started | Completed |
 |-------|--------|---------|-----------|
-| Stage 0: Binary Silhouette | COMPLETE | 2026-01-14 | 2026-01-14 |
-| Phase 0: 3-Class Silhouette | NOT_STARTED | - | - |
+| Stage 0: Binary Classification | COMPLETE | 2026-01-14 | 2026-01-14 |
 | Phase 1: Ensemble Exploration | NOT_STARTED | - | - |
 | Phase 2: Neural Net Exploration | NOT_STARTED | - | - |
 | Phase 3: LOSO Validation | NOT_STARTED | - | - |
-
----
-
-## Checkpoint Status
-
-**Awaiting Approval:** Stage 0 Binary Silhouette Analysis
-
-**Instructions:** After each phase completes, review results and update this file:
-- Change phase status from "COMPLETE" to "APPROVED"
-- Update "Next Action" to point to next phase
-- Claude will proceed when status shows "APPROVED"
 
 ---
 
@@ -51,12 +39,12 @@
 | Normalization | Per-subject baseline (no-pain reference) |
 
 ### Normalization Comparison
-| Method | Silhouette | Linear Accuracy |
-|--------|------------|-----------------|
-| Raw (none) | 0.4904 | 87.97% |
-| Global StandardScaler | 0.4759 | 87.45% |
-| Per-subject z-score | 0.6505 | 97.44% |
-| **Per-subject baseline** | **0.6295** | **99.97%** |
+| Method | Linear Accuracy |
+|--------|-----------------|
+| Raw (none) | 87.97% |
+| Global StandardScaler | 87.45% |
+| Per-subject z-score | 97.44% |
+| **Per-subject baseline** | **99.97%** |
 
 ### Key Finding
 Per-subject baseline normalization is **REQUIRED** for optimal classification. Global normalization (Paper 1 method) doesn't improve performance.
@@ -69,5 +57,5 @@ results/stage0_binary/
 ```
 
 ### Implications for Next Phases
-1. Apply per-subject baseline normalization to Phase 0 (3-class)
+1. Apply per-subject baseline normalization to Phase 1 (3-class)
 2. For LOSO: normalize test subjects using their own no-pain baseline

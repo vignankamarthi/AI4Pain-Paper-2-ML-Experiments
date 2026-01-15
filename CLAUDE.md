@@ -24,9 +24,8 @@
 - **`PLAN.md`**: High-level experimental plan and todo checklist
 
 ### Phase Instructions
-- **`phases/STAGE0.md`**: Binary classification silhouette analysis
-- **`phases/PHASE0.md`**: 3-class silhouette analysis
-- **`phases/PHASE1.md`**: Ensemble exploration (80/20 split)
+- **`phases/STAGE0.md`**: Binary classification with per-subject baseline normalization
+- **`phases/PHASE1.md`**: 3-class ensemble exploration (80/20 split)
 - **`phases/PHASE2.md`**: Neural net exploration (if needed)
 - **`phases/PHASE3.md`**: LOSO validation on top 5 models
 
@@ -58,18 +57,16 @@
   - `binaryclass` - Binary label (0 = no pain, 1 = pain)
 
 ### Code
-- **`src/stage0_binary_silhouette.py`**: Stage 0 execution script
-- **`src/phase0_3class_silhouette.py`**: Phase 0 execution script
-- **`src/phase1_ensemble_experiments.py`**: Phase 1 execution script
+- **`src/stage0_binary_silhouette.py`**: Stage 0 execution script (binary classification)
+- **`src/phase1_ensemble_experiments.py`**: Phase 1 execution script (3-class ensembles)
 - **`src/phase2_neural_experiments.py`**: Phase 2 execution script (if triggered)
 - **`src/phase3_loso_validation.py`**: Phase 3 execution script
 - **`src/utils/`**: Shared utilities (data loading, plotting, metrics, reporting)
 
 ### Results
 All experiment outputs organized by phase in `results/`:
-- **`results/stage0_binary/`**: Binary classification silhouette analysis
-- **`results/phase0_silhouette/`**: 3-class silhouette analysis
-- **`results/phase1_ensembles/`**: Ensemble model results (80/20)
+- **`results/stage0_binary/`**: Binary classification analysis (normalization discovery)
+- **`results/phase1_ensembles/`**: 3-class ensemble model results (80/20)
 - **`results/phase2_neuralnets/`**: Neural net results (if triggered)
 - **`results/phase3_loso/`**: LOSO validation and final report
 

@@ -3,62 +3,64 @@
 ## Research Objective
 Improve 3-class pain classification accuracy beyond Paper 1's **79.4% balanced accuracy** baseline using entropy and complexity-based features extracted from multimodal physiological signals.
 
-**Target:** Greater than or equal to 90% balanced accuracy (stretch goal)  
+**Target:** Greater than or equal to 90% balanced accuracy (stretch goal)
 **Minimum Success:** Greater than or equal to 85% balanced accuracy with robust LOSO validation
+
+---
+
+## Key Discovery: Per-Subject Baseline Normalization
+
+From Stage 0, we discovered that **per-subject baseline normalization** is critical:
+- Normalize each subject's entropy features using ONLY their no-pain samples as reference
+- This accounts for individual physiological differences
+- Binary classification: 99.97% accuracy (vs 87% with global normalization)
+
+This normalization strategy will be applied to all subsequent phases.
 
 ---
 
 ## Experimental Waterfall
 
-### Stage 0: Binary Classification Silhouette (Quick Win)
-**Status:** COMPLETE - Awaiting Approval
+### Stage 0: Binary Classification (COMPLETE)
+**Status:** COMPLETE
 
-**Goal:** Quantify Paper 1's binary classification (pain vs. no-pain) separation on C-H plane.
+**Goal:** Establish binary pain classification baseline on C-H plane.
 
-**Deliverable:** Silhouette constants for all (d, tau, signal) combos, ranked report.
+**Key Finding:** Per-subject baseline normalization achieves **99.97% linear accuracy** for binary classification (pain vs no-pain).
 
-**Success Criteria:** Clear documentation of which parameter combos yield best binary separation.
+**Best Parameters:** EDA, d=7, tau=2
 
-**Results:** Best combination EDA d=7 tau=2 (silhouette: **0.490** with pe+comp). Strong binary separation for EDA/BVP at high dimensions. RESP weakest (mean: 0.008).
-
-**Multimodal Extension:** Combined best (d, tau) per signal → EDA+BVP achieves **88.95% balanced accuracy** with SVM. Adding RESP/SpO2 reduces performance.
-
-**FINAL RESULT: 99.97% Linear Accuracy with Per-Subject Baseline Normalization**
-- **Method:** Normalize H and C using each subject's no-pain samples as baseline reference
-- **Comparison:** Raw=87.97%, Global StandardScaler=87.45%, **Baseline Norm=99.97%**
-- **Key insight:** Per-subject normalization aligns all subjects to common reference frame
-- **Physiological interpretation:** Pain causes ↓H (more predictable) and ↑C (more structured) relative to baseline
+**Results:**
+| Normalization | Accuracy |
+|---------------|----------|
+| Raw | 87.97% |
+| Global StandardScaler | 87.45% |
+| **Per-subject baseline** | **99.97%** |
 
 ---
 
-### Phase 0: 3-Class Silhouette Analysis
+### Phase 1: 3-Class Classification (80/20 Split)
 **Status:** Not started
 
-**Goal:** Identify discriminative (d, tau, signal) combinations for 3-class classification (baseline, low, high).
+**Goal:** Train and evaluate classifiers for 3-class pain classification (baseline, low_pain, high_pain) using per-subject baseline normalization.
 
-**Deliverable:** Ranked silhouette constants, feature selection justification, SpO2 exclusion rationale.
+**Features:** All 8 entropy measures normalized per-subject
+- pe, comp, fisher_shannon, fisher_info, renyipe, renyicomp, tsallispe, tsalliscomp
 
-**Success Criteria:** Clear threshold decision (e.g., "use top 40% of combos") with PI approval.
+**Signals to test:** EDA, BVP, RESP, SpO2 (all 4)
 
----
-
-### Phase 1: Ensemble Exploration (80/20 Split)
-**Status:** Not started
-
-**Goal:** Rapid exploration of ensemble methods using silhouette-filtered features.
-
-**Models:** Random Forest, XGBoost, LightGBM, Stacked Ensembles
+**Models:** Random Forest, XGBoost, LightGBM, SVM, Logistic Regression
 
 **Deliverable:** Leaderboard of model performance, confusion matrices, feature importance.
 
-**Success Criteria:** Best ensemble achieves greater than or equal to 82% balanced accuracy (if greater than or equal to 85%, proceed to LOSO; if less than 85%, consider Phase 2).
+**Success Criteria:** Best model achieves >= 85% balanced accuracy
 
 ---
 
 ### Phase 2: Neural Net Exploration (If Needed)
 **Status:** Not started
 
-**Trigger:** Phase 1 best ensemble less than 85% balanced accuracy
+**Trigger:** Phase 1 best model < 85% balanced accuracy
 
 **Goal:** Explore deep learning architectures to capture complex feature interactions.
 
@@ -66,49 +68,37 @@ Improve 3-class pain classification accuracy beyond Paper 1's **79.4% balanced a
 
 **Deliverable:** Neural net leaderboard, comparison to ensembles.
 
-**Success Criteria:** Neural net beats best ensemble by greater than or equal to 2% balanced accuracy.
+**Success Criteria:** Neural net beats best ensemble by >= 2% balanced accuracy.
 
 ---
 
 ### Phase 3: LOSO Validation
 **Status:** Not started
 
-**Goal:** Rigorous cross-validation on top 5 models (ensemble and/or neural net).
+**Goal:** Rigorous cross-validation on top models.
 
-**Validation:** Leave-One-Subject-Out (41 folds)
+**Validation:** Leave-One-Subject-Out
 
-**Deliverable:** Final report with LOSO results, confusion matrices, C-H plane visualizations, best model file.
+**Deliverable:** Final report with LOSO results, confusion matrices, best model file.
 
-**Success Criteria:** Top model achieves greater than or equal to 85% LOSO balanced accuracy (greater than or equal to 90% equals exceptional).
+**Success Criteria:** Top model achieves >= 85% LOSO balanced accuracy (>= 90% = exceptional).
 
 ---
 
 ## Todo Checklist
 
-- [x] Stage 0: Binary silhouette analysis complete
-- [ ] Stage 0: Results reviewed and approved by PI
-- [ ] Phase 0: 3-class silhouette analysis complete
-- [ ] Phase 0: Feature threshold decision made and documented
-- [ ] Phase 1: Ensemble experiments complete (80/20)
+- [x] Stage 0: Binary classification complete (99.97% with baseline normalization)
+- [ ] Phase 1: 3-class classification experiments (80/20)
 - [ ] Phase 1: Review results - decide if Phase 2 needed
-- [ ] Phase 2: Neural net experiments complete (if triggered)
-- [ ] Phase 3: LOSO validation complete
+- [ ] Phase 2: Neural net experiments (if triggered)
+- [ ] Phase 3: LOSO validation
 - [ ] Final report generated and submitted
-
----
-
-## Key Milestones
-
-**Week 1-2:** Silhouette analyses (Stage 0 and Phase 0)  
-**Week 3-4:** Ensemble exploration (Phase 1)  
-**Week 4-5:** Neural nets if needed (Phase 2)  
-**Week 5-6:** LOSO validation and paper writing (Phase 3)
 
 ---
 
 ## Success Metrics
 
-**Primary:** Balanced accuracy (handles class imbalance)  
+**Primary:** Balanced accuracy (handles class imbalance)
 **Secondary:** F1-score (weighted), per-class accuracy, confusion matrix analysis
 
 **Baseline to Beat:** 79.4% (Paper 1, catch22 features)

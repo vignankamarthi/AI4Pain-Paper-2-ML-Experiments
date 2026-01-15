@@ -1,7 +1,7 @@
 # Phase 1: Ensemble Exploration (80/20 Split)
 
 ## Objective
-Rapid exploration of ensemble machine learning methods using silhouette-filtered features. Establish baseline ML performance and determine if neural nets (Phase 2) are needed.
+Rapid exploration of ensemble machine learning methods using per-subject baseline normalized features. Establish baseline ML performance and determine if neural nets (Phase 2) are needed.
 
 ---
 
@@ -9,8 +9,8 @@ Rapid exploration of ensemble machine learning methods using silhouette-filtered
 
 ### Extracted Features (Primary Source)
 - **Location:** `data/features/results_{split}_{signal}.csv`
-- **Feature subset:** Determined from Phase 0 (use only combos meeting silhouette threshold)
-- **Signals:** EDA, BVP, RESP (SpO2 excluded based on Phase 0 results)
+- **Normalization:** Per-subject baseline normalization (using no-pain samples as reference)
+- **Signals:** EDA, BVP, RESP, SpO2 (all 4 signals)
 - **Features per signal** (8 measures):
   - `pe` - Permutation Entropy (H)
   - `comp` - Statistical Complexity (C)
@@ -29,10 +29,10 @@ Rapid exploration of ensemble machine learning methods using silhouette-filtered
 ## Experiment Configuration
 
 ### Feature Selection
-Use features from (d, tau, signal) combinations that met the Phase 0 silhouette threshold:
-- Example: If "top 40%" threshold approved, use features from top 24 combos
-- Each combo contributes 8 measures: PE, C, Fisher-Shannon, Fisher, Renyi PE/C, Tsallis PE/C
-- Total features: N_combos × 8 measures
+Use all 8 entropy/complexity features from each signal:
+- All (d, tau, signal) combinations are evaluated
+- Each signal contributes 8 measures: PE, C, Fisher-Shannon, Fisher, Renyi PE/C, Tsallis PE/C
+- Per-subject baseline normalization applied to all features
 
 ### Train/Test Split
 - **Training:** 80% of combined train+validation data
@@ -95,7 +95,7 @@ Use Optuna (Bayesian optimization) for each model:
 
 ### Step 1: Feature Loading and Preprocessing
 1. Load entropy/complexity features for all signals
-2. Filter features based on Phase 0 approved threshold
+2. Apply per-subject baseline normalization (using no-pain samples as reference)
 3. Combine train and validation sets
 4. Create 80/20 stratified split
 5. Standardize features using StandardScaler (fit on train, transform train and test)
@@ -234,5 +234,5 @@ Approximately 4-6 hours on M2 Pro MacBook (50 trials × 5 models with 5-fold CV)
 - Best model should exceed Paper 1 baseline (79.4%)
 - Stacked ensembles should outperform individual models
 - Confusion matrix should show better discrimination than random guessing
-- Feature importance should align with Phase 0 silhouette rankings
+- Feature importance analysis identifies most discriminative entropy measures
 - If best model greater than or equal to 85%, Phase 2 may not be needed

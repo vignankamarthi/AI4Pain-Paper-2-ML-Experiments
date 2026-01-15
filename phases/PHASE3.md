@@ -9,9 +9,9 @@ Rigorous Leave-One-Subject-Out (LOSO) cross-validation on top 5 models selected 
 
 ### Extracted Features (Primary Source)
 - **Location:** `data/features/results_{split}_{signal}.csv`
-- **Feature subset:** Same filtered feature set from Phase 1/2
+- **Feature subset:** Per-subject baseline normalized features from Phase 1/2
 - **Full dataset:** All subjects from train, validation, and test sets combined (65 subjects)
-- **Signals:** EDA, BVP, RESP (SpO2 excluded)
+- **Signals:** EDA, BVP, RESP, SpO2 (all 4 signals)
 - **Features per signal** (8 measures):
   - `pe` - Permutation Entropy (H)
   - `comp` - Statistical Complexity (C)
@@ -85,11 +85,11 @@ For each model:
 
 ### Step 5: Complexity-Entropy Plane Visualization
 For best LOSO model:
-1. Generate C-H plane plots for each signal (EDA, BVP, RESP)
+1. Generate C-H plane plots for each signal (EDA, BVP, RESP, SpO2)
 2. Color points by true class (baseline, low, high)
 3. Overlay predicted class as marker shape or border
 4. Highlight misclassified points
-5. Include per-signal silhouette constants in titles
+5. Include classification accuracy in titles
 
 ### Step 6: Final Model Selection
 1. Rank models by LOSO balanced accuracy
@@ -101,8 +101,7 @@ For best LOSO model:
 ### Step 7: Comprehensive Final Report
 Generate `final_report.md` with complete experimental narrative:
 - Research objective recap
-- Stage 0: Binary silhouette findings
-- Phase 0: 3-class silhouette and feature selection
+- Stage 0: Binary classification and normalization discovery
 - Phase 1: Ensemble exploration results
 - Phase 2: Neural net results (if triggered)
 - Phase 3: LOSO validation results
@@ -157,15 +156,10 @@ Generate `final_report.md` with complete experimental narrative:
      - Best model and performance
      - Comparison to Paper 1 baseline
      - Success assessment
-   - **Stage 0: Binary Silhouette Analysis**
-     - Methodology
-     - Top combinations
-     - Key insights
-   - **Phase 0: 3-Class Silhouette Analysis**
-     - Methodology
-     - Feature selection rationale
-     - SpO2 exclusion justification
-     - Threshold decision
+   - **Stage 0: Binary Classification Analysis**
+     - Per-subject baseline normalization methodology
+     - Normalization comparison results
+     - Key insights (99.97% accuracy discovery)
    - **Phase 1: Ensemble Exploration**
      - Models tested
      - 80/20 performance
