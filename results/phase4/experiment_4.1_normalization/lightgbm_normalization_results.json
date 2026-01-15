@@ -1,0 +1,20 @@
+[
+  {
+    "normalization": "per_subject_baseline",
+    "model": "LightGBM",
+    "accuracy": 74.84128937007874,
+    "std": 1.5312320724924164
+  },
+  {
+    "normalization": "global_zscore",
+    "model": "LightGBM",
+    "accuracy": 74.15887467191602,
+    "std": 0.8546438366760075
+  },
+  {
+    "normalization": "raw",
+    "model": "LightGBM",
+    "accuracy": 74.10515091863518,
+    "std": 1.3141965157474533
+  }
+]

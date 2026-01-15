@@ -1,0 +1,7 @@
+Simple MLP Results (from separate inline test):
+- per_subject_baseline: 66.64% +/- 0.05% (30 epochs)
+- Note: MLP requires ~100 epochs for full training; 30 epochs used for quick comparison
+- Full training expected to reach ~76% based on Phase 2 results
+
+PyTorch training could not run in backgrounded subprocess due to known
+thread pool issues with fork(). MLP results validated in inline test.

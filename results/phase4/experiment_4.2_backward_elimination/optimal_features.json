@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-01-15T15:19:46.486193",
+  "baseline_accuracy": 74.84128937007874,
+  "optimal_n_features": 24,
+  "optimal_accuracy": 74.84128937007874,
+  "optimal_std": 1.5312320724924164,
+  "optimal_features": [
+    "eda_pe",
+    "eda_comp",
+    "eda_fisher_shannon",
+    "eda_fisher_info",
+    "eda_renyipe",
+    "eda_renyicomp",
+    "eda_tsallispe",
+    "eda_tsalliscomp",
+    "bvp_pe",
+    "bvp_comp",
+    "bvp_fisher_shannon",
+    "bvp_fisher_info",
+    "bvp_renyipe",
+    "bvp_renyicomp",
+    "bvp_tsallispe",
+    "bvp_tsalliscomp",
+    "resp_pe",
+    "resp_comp",
+    "resp_fisher_shannon",
+    "resp_fisher_info",
+    "resp_renyipe",
+    "resp_renyicomp",
+    "resp_tsallispe",
+    "resp_tsalliscomp"
+  ],
+  "removed_features": [
+    "eda_tsallispe"
+  ],
+  "stopping_threshold": 0.5
+}

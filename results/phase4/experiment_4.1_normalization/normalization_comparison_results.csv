@@ -1,0 +1,7 @@
+normalization,model,model_type,balanced_accuracy_mean,balanced_accuracy_std
+per_subject_baseline,LightGBM,tree,74.84128937007874,1.5312320724924164
+per_subject_baseline,Stacked,ensemble,71.24764229838918,1.5684067181806243
+global_zscore,LightGBM,tree,74.15887467191602,0.8546438366760075
+global_zscore,Stacked,ensemble,68.92429461942257,1.3813697225175554
+raw,LightGBM,tree,74.10515091863518,1.3141965157474533
+raw,Stacked,ensemble,69.44430774278214,3.023364390121955

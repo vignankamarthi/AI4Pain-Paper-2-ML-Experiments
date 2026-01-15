@@ -1,0 +1,4 @@
+model,normalization,accuracy_mean,accuracy_std,fold_1,fold_2,fold_3,fold_4,fold_5
+SimpleMLP,per_subject_baseline,72.62,4.30,65.35,74.77,77.34,75.34,70.27
+SimpleMLP,global_zscore,69.96,2.67,65.51,73.58,71.27,69.05,70.38
+SimpleMLP,raw,38.75,1.33,36.31,40.37,38.96,38.94,39.18

@@ -1,0 +1,51 @@
+{
+  "timestamp": "2026-01-15T15:18:18.195175",
+  "results": [
+    {
+      "normalization": "per_subject_baseline",
+      "model": "LightGBM",
+      "model_type": "tree",
+      "balanced_accuracy_mean": 74.84128937007874,
+      "balanced_accuracy_std": 1.5312320724924164
+    },
+    {
+      "normalization": "per_subject_baseline",
+      "model": "Stacked",
+      "model_type": "ensemble",
+      "balanced_accuracy_mean": 71.24764229838918,
+      "balanced_accuracy_std": 1.5684067181806243
+    },
+    {
+      "normalization": "global_zscore",
+      "model": "LightGBM",
+      "model_type": "tree",
+      "balanced_accuracy_mean": 74.15887467191602,
+      "balanced_accuracy_std": 0.8546438366760075
+    },
+    {
+      "normalization": "global_zscore",
+      "model": "Stacked",
+      "model_type": "ensemble",
+      "balanced_accuracy_mean": 68.92429461942257,
+      "balanced_accuracy_std": 1.3813697225175554
+    },
+    {
+      "normalization": "raw",
+      "model": "LightGBM",
+      "model_type": "tree",
+      "balanced_accuracy_mean": 74.10515091863518,
+      "balanced_accuracy_std": 1.3141965157474533
+    },
+    {
+      "normalization": "raw",
+      "model": "Stacked",
+      "model_type": "ensemble",
+      "balanced_accuracy_mean": 69.44430774278214,
+      "balanced_accuracy_std": 3.023364390121955
+    }
+  ],
+  "best_normalization": "per_subject_baseline",
+  "best_model": "LightGBM",
+  "best_accuracy": 74.84128937007874,
+  "note": "Simple MLP tested separately due to subprocess issues - see mlp_results_note.txt"
+}
