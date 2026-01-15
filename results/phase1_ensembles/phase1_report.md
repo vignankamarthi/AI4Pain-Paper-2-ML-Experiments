@@ -4,7 +4,7 @@
 
 ---
 
-## Executive Summary
+## Summary
 
 **Best Model:** LightGBM
 **Balanced Accuracy:** 75.59%

@@ -4,7 +4,7 @@
 
 ---
 
-## Executive Summary
+## Summary
 
 | Metric | Value |
 |--------|-------|
