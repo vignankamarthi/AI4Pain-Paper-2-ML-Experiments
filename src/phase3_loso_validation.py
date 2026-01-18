@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """
-Phase 3: LOSO (Leave-One-Subject-Out) Cross-Validation
+Phase 6 Step 3: LOSO Validation (BASELINE-ONLY)
 
-Validates top models from Phase 1 using rigorous LOSO CV across all subjects.
+MIRRORS Phase 3 but with baseline-only labeling:
+- Class 0: no_pain (baseline ONLY - rest segments EXCLUDED)
+- Class 1: low_pain
+- Class 2: high_pain
+
+Validates top models from Step 1 using rigorous LOSO CV across all subjects.
 Uses the same per-subject baseline normalization strategy from Stage 0.
 
 Author: Claude (AI Assistant)
-Date: 2026-01-14
+Date: 2026-01-15
 """
 
+import gc
 import os
 import re
 import json
@@ -68,15 +74,14 @@ FEATURE_COLS = ['pe', 'comp', 'fisher_shannon', 'fisher_info',
 # Paper 1 baseline for comparison
 PAPER1_BASELINE = 0.794
 
-# Paths
-PROJECT_ROOT = Path(__file__).parent.parent
+# Paths - navigate up from src/phase6/ to project root
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 DATA_DIR = PROJECT_ROOT / 'data' / 'features'
-RESULTS_DIR = PROJECT_ROOT / 'results' / 'phase3_loso'
+RESULTS_DIR = PROJECT_ROOT / 'results' / 'phase6_step3_loso'
 
-# Class mapping (same as Phase 1)
+# Class mapping - BASELINE ONLY (rest segments EXCLUDED)
 CLASS_MAPPING = {
-    'baseline': 0,  # no_pain
-    'rest': 0,      # no_pain
+    'baseline': 0,  # no_pain (ONLY baseline, not rest)
     'low': 1,       # low_pain
     'high': 2       # high_pain
 }
@@ -144,6 +149,54 @@ BEST_PARAMS = {
         'input_dim': 32
     }
 }
+
+
+# =============================================================================
+# Checkpointing and Memory Management
+# =============================================================================
+
+def clear_memory():
+    """Clear all caches and force garbage collection to prevent memory crashes."""
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    gc.collect()
+
+
+def load_checkpoint(results_dir):
+    """Load checkpoint if exists, return completed models and results."""
+    checkpoint_file = results_dir / 'checkpoint.json'
+    if checkpoint_file.exists():
+        with open(checkpoint_file, 'r') as f:
+            checkpoint = json.load(f)
+        print(f'  Loaded checkpoint: {len(checkpoint["completed"])} models completed')
+        return checkpoint
+    return {'completed': [], 'results': {}}
+
+
+def save_checkpoint(results_dir, completed, results):
+    """Save checkpoint after each model completes LOSO."""
+    # Convert results to serializable format
+    serializable_results = {}
+    for name, data in results.items():
+        serializable_results[name] = {
+            'n_folds': data.get('n_folds', 0),
+            'metrics': data.get('metrics', {}),
+            'ci_95': data.get('ci_95', (0, 0)),
+            'statistical_test': data.get('statistical_test', {}),
+            'cohens_d': data.get('cohens_d', 0)
+        }
+
+    checkpoint = {
+        'timestamp': datetime.now().isoformat(),
+        'completed': completed,
+        'results': serializable_results
+    }
+    checkpoint_file = results_dir / 'checkpoint.json'
+    with open(checkpoint_file, 'w') as f:
+        json.dump(checkpoint, f, indent=2)
+    print(f'    [CHECKPOINT SAVED] {len(completed)} models completed')
 
 
 # =============================================================================
@@ -293,6 +346,12 @@ def load_all_data() -> pd.DataFrame:
         (combined['dimension'] == BEST_DIMENSION) &
         (combined['tau'] == BEST_TAU)
     ].copy()
+
+    # PHASE 6 KEY DIFFERENCE: Exclude rest segments entirely
+    n_before = len(combined)
+    combined = combined[combined['state'] != 'rest'].copy()
+    n_after = len(combined)
+    print(f"  [PHASE 6] Excluded {n_before - n_after} rest segments")
 
     # Extract subject IDs from segment_id (e.g., '12_Baseline_1' -> '12')
     combined['subject_id'] = combined['segment_id'].apply(extract_subject_id)
@@ -1150,22 +1209,47 @@ def main():
     # Only run ensemble models for LOSO validation
     models_to_validate = fast_ensembles
 
-    # Run LOSO for each model
+    # Load checkpoint (resume capability)
+    checkpoint = load_checkpoint(RESULTS_DIR)
+    completed_models = set(checkpoint['completed'])
     all_results = {}
+
+    if completed_models:
+        print(f'  Resuming from checkpoint: {len(completed_models)} models already done')
+
     failed_models = []
+
+    # Run LOSO for each model with checkpointing
     for model_name in models_to_validate:
+        # Skip already completed models
+        if model_name in completed_models:
+            print(f"\n[SKIPPED] {model_name} - already completed")
+            continue
+
+        # Clear memory before model
+        clear_memory()
+
         try:
             print(f"\n[Starting LOSO for {model_name}]")
             results = run_loso_for_model(df.copy(), multimodal_feature_cols, model_name)
             all_results[model_name] = results
             print(f"[Completed LOSO for {model_name}]")
+
+            # Mark as completed and save checkpoint
+            completed_models.add(model_name)
+            save_checkpoint(RESULTS_DIR, list(completed_models), all_results)
+
         except Exception as e:
             print(f"\n[ERROR] {model_name} failed: {str(e)}")
-            failed_models.append(model_name)
-            continue
+            failed_models.append({'model': model_name, 'error': str(e), 'timestamp': datetime.now().isoformat()})
+            with open(RESULTS_DIR / 'failed_models.json', 'w') as f:
+                json.dump(failed_models, f, indent=2)
+
+        # Clear memory after model
+        clear_memory()
 
     if failed_models:
-        print(f"\n[WARNING] The following models failed: {failed_models}")
+        print(f"\n[WARNING] The following models failed: {[f['model'] for f in failed_models]}")
 
     if not all_results:
         print("[FATAL] No models completed successfully. Exiting.")

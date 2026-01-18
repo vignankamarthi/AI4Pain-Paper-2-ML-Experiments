@@ -1,18 +1,18 @@
 # Phase 3: LOSO Validation - Final Report
 
-**Generated:** 2026-01-15 08:09
+**Generated:** 2026-01-16 04:30
 
 ---
 
-## Summary
+## Executive Summary
 
 | Metric | Value |
 |--------|-------|
-| **Best Model** | LightGBM |
-| **LOSO Balanced Accuracy** | 74.48% +/- 7.69% |
-| **95% Confidence Interval** | [72.43%, 76.53%] |
+| **Best Model** | RandomForest |
+| **LOSO Balanced Accuracy** | 77.15% +/- 9.06% |
+| **95% Confidence Interval** | [74.73%, 79.57%] |
 | **Paper 1 Baseline** | 79.4% |
-| **Improvement** | -6.20% |
+| **Improvement** | -2.84% |
 | **Status** | BELOW PAPER 1 BASELINE |
 
 ---
@@ -68,31 +68,31 @@ Stage 0 investigated binary pain classification (pain vs no-pain) using Complexi
 
 | Rank | Model | Balanced Acc (Mean+/-Std) | 95% CI | Accuracy |
 |------|-------|------------------------|--------|----------|
-| 1 | LightGBM | 74.48% +/- 7.69% | [72.43%, 76.53%] | 80.86% |
-| 2 | XGBoost | 74.21% +/- 7.01% | [72.35%, 76.08%] | 80.66% |
-| 3 | RandomForest | 74.19% +/- 6.71% | [72.40%, 75.98%] | 80.62% |
+| 1 | RandomForest | 77.15% +/- 9.06% | [74.73%, 79.57%] | 67.09% |
+| 2 | XGBoost | 76.36% +/- 9.24% | [73.90%, 78.83%] | 65.96% |
+| 3 | LightGBM | 75.63% +/- 9.03% | [73.22%, 78.04%] | 64.91% |
 
 
 ### Statistical Comparison to Paper 1 Baseline
 
 | Model | LOSO BA | Paper 1 | Improvement | t-stat | p-value | Cohen's d | Significant |
 |-------|---------|---------|-------------|--------|---------|-----------|-------------|
-| LightGBM | 74.48% | 79.4% | -6.20% | -4.664 | 0.0000 | -0.647 | Yes |
-| XGBoost | 74.21% | 79.4% | -6.53% | -5.389 | 0.0000 | -0.747 | Yes |
-| RandomForest | 74.19% | 79.4% | -6.56% | -5.653 | 0.0000 | -0.784 | Yes |
+| LightGBM | 75.63% | 79.4% | -4.75% | -3.041 | 0.0037 | -0.422 | Yes |
+| XGBoost | 76.36% | 79.4% | -3.83% | -2.393 | 0.0203 | -0.332 | Yes |
+| RandomForest | 77.15% | 79.4% | -2.84% | -1.809 | 0.0763 | -0.251 | No |
 
 
-### Per-Class Performance (Best Model: LightGBM)
+### Per-Class Performance (Best Model: RandomForest)
 
 | Class | Samples | Accuracy | Notes |
 |-------|---------|----------|-------|
-| No Pain | 1272 | 100.00% | Baseline + Rest states |
-| Low Pain | 636 | 66.82% | Low-intensity TENS |
-| High Pain | 636 | 56.60% | High-intensity TENS |
+| No Pain | 53 | 100.00% | Baseline + Rest states |
+| Low Pain | 636 | 65.25% | Low-intensity TENS |
+| High Pain | 636 | 66.19% | High-intensity TENS |
 
 ### Confusion Matrix Analysis
 
-The LOSO confusion matrix for LightGBM reveals:
+The LOSO confusion matrix for RandomForest reveals:
 - **No Pain detection:** 100.0% accuracy (strong)
 - **Low vs High Pain discrimination:** The primary challenge
 - **Most common error:** Low Pain <-> High Pain confusion
@@ -105,8 +105,8 @@ The LOSO confusion matrix for LightGBM reveals:
 
 **BELOW PAPER 1 BASELINE**
 
-The best model (LightGBM) achieves 74.48% balanced accuracy, which is
-6.20% below Paper 1's 79.4% baseline.
+The best model (RandomForest) achieves 77.15% balanced accuracy, which is
+2.84% below Paper 1's 79.4% baseline.
 
 **Potential reasons:**
 1. 3-class classification (no_pain/low_pain/high_pain) is inherently harder than approaches
@@ -127,15 +127,15 @@ The best model (LightGBM) achieves 74.48% balanced accuracy, which is
 3. **Pain intensity discrimination is the bottleneck:** The primary challenge is distinguishing
    low pain from high pain, suggesting subtle differences in physiological responses.
 
-4. **LightGBM provides best generalization:** Among all tested models, LightGBM
+4. **RandomForest provides best generalization:** Among all tested models, RandomForest
    shows the best LOSO performance, suggesting good bias-variance tradeoff.
 
 ### Comparison: Phase 1 (80/20) vs Phase 3 (LOSO)
 
 | Model | Phase 1 (80/20) | Phase 3 (LOSO) | Difference |
 |-------|-----------------|----------------|------------|
-| LightGBM | 75.59% | 74.48% | -1.11% |
-| XGBoost | 72.70% | 74.21% | +1.51% |
+| XGBoost | 72.70% | 76.36% | +3.66% |
+| LightGBM | 75.59% | 75.63% | +0.04% |
 
 
 The drop from 80/20 to LOSO performance indicates some overfitting to subject-specific patterns
@@ -166,7 +166,7 @@ in the training data. LOSO provides a more realistic estimate of real-world perf
 
 This study demonstrates that **entropy-complexity features derived from physiological signals**,
 combined with **per-subject baseline normalization**, provide discriminative information for
-3-class pain classification. The best model (LightGBM) achieves **74.48%** balanced
+3-class pain classification. The best model (RandomForest) achieves **77.15%** balanced
 accuracy on rigorous LOSO cross-validation.
 
 While performance falls short of Paper 1 baseline on the 3-class task, the per-subject normalization insight and entropy features provide a foundation for future improvements.
@@ -189,20 +189,17 @@ While performance falls short of Paper 1 baseline on the 3-class task, the per-s
 }
 ```
 
-### Best Model Configuration (LightGBM)
+### Best Model Configuration (RandomForest)
 ```json
 {
-  "n_estimators": 100,
-  "max_depth": -1,
-  "learning_rate": 0.01,
-  "num_leaves": 31,
-  "subsample": 0.6,
-  "colsample_bytree": 0.6,
-  "reg_alpha": 0.5,
-  "reg_lambda": 0,
+  "n_estimators": 500,
+  "max_depth": 10,
+  "min_samples_split": 2,
+  "min_samples_leaf": 4,
+  "max_features": null,
+  "class_weight": null,
   "random_state": 42,
-  "n_jobs": -1,
-  "verbose": -1
+  "n_jobs": -1
 }
 ```
 
