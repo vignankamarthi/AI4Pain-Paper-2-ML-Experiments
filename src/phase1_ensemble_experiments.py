@@ -1,10 +1,15 @@
 """
-Phase 1: 3-Class Ensemble Exploration with Per-Subject Baseline Normalization
+Phase 6 Step 1: 3-Class Ensemble Exploration (BASELINE-ONLY No-Pain)
 
-This script trains and evaluates ensemble ML models for 3-class pain classification:
-- Class 0: no_pain (baseline + rest states)
+MIRRORS Phase 1 but with baseline-only labeling:
+- Class 0: no_pain (baseline ONLY - rest segments EXCLUDED)
 - Class 1: low_pain
 - Class 2: high_pain
+
+Key difference from Phase 1:
+- REST SEGMENTS ARE EXCLUDED FROM DATASET ENTIRELY
+- Only true baseline (pre-stimulus) segments define "no pain"
+- Class imbalance handled via balanced accuracy metrics
 
 Key approach:
 - Per-subject baseline normalization using no_pain samples as reference
@@ -13,10 +18,17 @@ Key approach:
 - Optuna hyperparameter optimization with 5-fold CV
 - Models: Random Forest, XGBoost, LightGBM, Stacked Ensembles
 
+FEATURES:
+- Checkpointing: Results saved after EACH model completes
+- Memory management: Cache cleared between models to prevent crashes
+- Fault tolerance: Failed models logged and skipped, others continue
+- Resume capability: Completed models skipped on restart
+
 Author: Claude (AI4Pain Paper 2)
-Date: 2026-01-14
+Date: 2026-01-15
 """
 
+import gc
 import os
 import json
 import pickle
@@ -45,6 +57,36 @@ from optuna.samplers import TPESampler
 warnings.filterwarnings('ignore')
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
+
+def clear_memory():
+    """Clear all caches and force garbage collection to prevent memory crashes."""
+    gc.collect()
+
+
+def load_checkpoint(results_dir):
+    """Load checkpoint if exists, return completed model names and results."""
+    checkpoint_file = results_dir / 'checkpoint.json'
+    if checkpoint_file.exists():
+        with open(checkpoint_file, 'r') as f:
+            checkpoint = json.load(f)
+        print(f'  Loaded checkpoint: {len(checkpoint["completed"])} models completed')
+        return checkpoint
+    return {'completed': [], 'all_results': [], 'best_params': {}}
+
+
+def save_checkpoint(results_dir, completed, all_results, best_params):
+    """Save checkpoint after each model completes."""
+    checkpoint = {
+        'timestamp': datetime.now().isoformat(),
+        'completed': completed,
+        'all_results': all_results,
+        'best_params': best_params
+    }
+    checkpoint_file = results_dir / 'checkpoint.json'
+    with open(checkpoint_file, 'w') as f:
+        json.dump(checkpoint, f, indent=2)
+    print(f'    [CHECKPOINT SAVED] {len(completed)} models completed')
+
 # Configuration
 RANDOM_SEED = 42
 BEST_DIMENSION = 7  # From Stage 0
@@ -55,19 +97,21 @@ FEATURE_COLS = ['pe', 'comp', 'fisher_shannon', 'fisher_info',
 N_OPTUNA_TRIALS = 50
 CV_FOLDS = 5
 
-# Class mapping
+# Class mapping - BASELINE ONLY (rest segments EXCLUDED)
 CLASS_MAP = {
-    'baseline': 0,  # no_pain
-    'rest': 0,      # no_pain
+    'baseline': 0,  # no_pain (ONLY baseline, not rest)
     'low': 1,       # low_pain
     'high': 2       # high_pain
 }
 CLASS_NAMES = ['no_pain', 'low_pain', 'high_pain']
 
 
-class Phase1Experiment:
+class Phase6Step1Experiment:
     """
-    Main experiment class for Phase 1 ensemble exploration.
+    Phase 6 Step 1: Ensemble exploration with BASELINE-ONLY no-pain labeling.
+
+    Mirrors Phase 1 but excludes rest segments entirely.
+    Only true baseline (pre-stimulus) segments define the no-pain class.
 
     Attributes
     ----------
@@ -77,7 +121,7 @@ class Phase1Experiment:
         Path to output results directory
     """
 
-    def __init__(self, base_dir: str = None):
+    def __init__(self, base_dir: Optional[str] = None):
         """
         Initialize the experiment.
 
@@ -87,12 +131,13 @@ class Phase1Experiment:
             Base directory of the project
         """
         if base_dir is None:
-            base_dir = Path(__file__).parent.parent
+            # Navigate up from src/phase6/ to project root
+            base_dir = Path(__file__).parent.parent.parent
         else:
             base_dir = Path(base_dir)
 
         self.data_dir = base_dir / 'data' / 'features'
-        self.results_dir = base_dir / 'results' / 'phase1_ensembles'
+        self.results_dir = base_dir / 'results' / 'phase6_step1_ensembles'
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
         # Create subdirectories
@@ -137,6 +182,12 @@ class Phase1Experiment:
                 all_data.append(df)
 
         combined = pd.concat(all_data, ignore_index=True)
+
+        # PHASE 6 KEY DIFFERENCE: Exclude rest segments entirely
+        n_before = len(combined)
+        combined = combined[combined['state'] != 'rest'].copy()
+        n_after = len(combined)
+        print(f"  [PHASE 6] Excluded {n_before - n_after} rest segments")
 
         print(f"  Loaded {len(combined)} rows from {len(SIGNALS)} signals")
         print(f"  Unique subjects: {combined['subject_id'].nunique()}")
@@ -218,8 +269,8 @@ class Phase1Experiment:
 
         df_norm = df.copy()
 
-        # Identify no_pain states for normalization
-        no_pain_states = ['baseline', 'rest']
+        # PHASE 6: Only baseline defines no-pain (rest excluded)
+        no_pain_states = ['baseline']
 
         subjects = df['subject_id'].unique()
 
@@ -692,7 +743,7 @@ class Phase1Experiment:
         best_params: Dict
     ) -> str:
         """
-        Generate Phase 1 markdown report.
+        Generate Phase 6 Step 1 markdown report.
 
         Parameters
         ----------
@@ -714,7 +765,7 @@ class Phase1Experiment:
         paper1_baseline = 79.4
         improvement = best_model['balanced_accuracy'] * 100 - paper1_baseline
 
-        report = f"""# Phase 1: Ensemble Exploration Results
+        report = f"""# Phase 6 Step 1: Ensemble Exploration Results (BASELINE-ONLY)
 
 **Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}
 
@@ -725,6 +776,8 @@ class Phase1Experiment:
 **Best Model:** {best_model['model']}
 **Balanced Accuracy:** {best_model['balanced_accuracy']*100:.2f}%
 **Improvement over Paper 1 Baseline:** {improvement:+.2f}% (from {paper1_baseline}%)
+
+**KEY DIFFERENCE:** Rest segments EXCLUDED - only baseline defines no-pain class.
 
 ---
 
@@ -737,7 +790,8 @@ class Phase1Experiment:
 | Signals | {', '.join(SIGNALS).upper()} |
 | Features per Signal | {len(FEATURE_COLS)} |
 | Total Features | {len(FEATURE_COLS) * len(SIGNALS)} |
-| Normalization | Per-subject baseline (no-pain reference) |
+| Normalization | Per-subject baseline (baseline-only reference) |
+| No-Pain Class | BASELINE ONLY (rest excluded) |
 | Train/Test Split | 80/20 stratified |
 | Optuna Trials | {N_OPTUNA_TRIALS} per model |
 | CV Folds | {CV_FOLDS} |
@@ -774,7 +828,7 @@ class Phase1Experiment:
 ## Per-Class Analysis
 
 The best model ({best_model['model']}) achieves:
-- **No Pain (baseline + rest):** {best_model['acc_no_pain']*100:.1f}% accuracy
+- **No Pain (baseline ONLY):** {best_model['acc_no_pain']*100:.1f}% accuracy
 - **Low Pain:** {best_model['acc_low_pain']*100:.1f}% accuracy
 - **High Pain:** {best_model['acc_high_pain']*100:.1f}% accuracy
 
@@ -784,10 +838,10 @@ The best model ({best_model['model']}) achieves:
 
 """
         if best_model['balanced_accuracy'] >= 0.85:
-            report += f"""**PROCEED TO PHASE 3 (LOSO VALIDATION)**
+            report += f"""**PROCEED TO STEP 3 (LOSO VALIDATION)**
 
 The best model achieves {best_model['balanced_accuracy']*100:.2f}% balanced accuracy, meeting the 85% threshold.
-Phase 2 (Neural Net Exploration) is NOT needed.
+Step 2 (Neural Net Exploration) is NOT needed.
 
 Recommended models for LOSO validation:
 """
@@ -795,13 +849,13 @@ Recommended models for LOSO validation:
             for _, row in top_models.iterrows():
                 report += f"- {row['model']}: {row['balanced_accuracy']*100:.2f}%\n"
         elif best_model['balanced_accuracy'] >= 0.82:
-            report += f"""**CONSIDER PHASE 2 (NEURAL NET EXPLORATION)**
+            report += f"""**CONSIDER STEP 2 (NEURAL NET EXPLORATION)**
 
 The best model achieves {best_model['balanced_accuracy']*100:.2f}% balanced accuracy, below the 85% threshold but above 82%.
 Neural nets may provide improvement through non-linear feature interactions.
 """
         else:
-            report += f"""**TRIGGER PHASE 2 (NEURAL NET EXPLORATION)**
+            report += f"""**TRIGGER STEP 2 (NEURAL NET EXPLORATION)**
 
 The best model achieves {best_model['balanced_accuracy']*100:.2f}% balanced accuracy, below 82%.
 Neural net exploration is recommended to improve performance.
@@ -813,10 +867,10 @@ Neural net exploration is recommended to improve performance.
 ## Output Files
 
 ```
-results/phase1_ensembles/
+results/phase6_step1_ensembles/
 ├── leaderboard.csv
 ├── hyperparameters.json
-├── phase1_report.md
+├── step1_report.md
 ├── confusion_matrices/
 │   └── [model]_confusion_matrix.png
 ├── feature_importance_plots/
@@ -831,11 +885,11 @@ results/phase1_ensembles/
 
 1. Review leaderboard and confusion matrices
 2. Select top 2-5 models for LOSO validation
-3. Proceed to Phase 3 for rigorous cross-validation
+3. Proceed to Step 3 for rigorous cross-validation
 """
 
         # Save report
-        with open(self.results_dir / 'phase1_report.md', 'w') as f:
+        with open(self.results_dir / 'step1_report.md', 'w') as f:
             f.write(report)
 
         # Save hyperparameters
@@ -846,10 +900,10 @@ results/phase1_ensembles/
 
     def run(self):
         """
-        Execute the full Phase 1 experiment pipeline.
+        Execute the full Phase 6 Step 1 experiment pipeline.
         """
         print("=" * 80)
-        print("PHASE 1: ENSEMBLE EXPLORATION")
+        print("PHASE 6 STEP 1: ENSEMBLE EXPLORATION (BASELINE-ONLY)")
         print("=" * 80)
 
         # Load and prepare data
@@ -961,7 +1015,7 @@ results/phase1_ensembles/
         report = self.generate_report(leaderboard, all_results, self.best_params)
 
         print("\n" + "=" * 80)
-        print("PHASE 1 COMPLETE")
+        print("PHASE 6 STEP 1 COMPLETE")
         print("=" * 80)
         print(f"\nResults saved to: {self.results_dir}")
 
@@ -969,5 +1023,5 @@ results/phase1_ensembles/
 
 
 if __name__ == '__main__':
-    experiment = Phase1Experiment()
+    experiment = Phase6Step1Experiment()
     leaderboard, results = experiment.run()

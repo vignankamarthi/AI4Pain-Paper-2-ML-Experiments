@@ -1,66 +1,91 @@
-# Stage 0: Binary Classification with Per-Subject Baseline Normalization
+# Stage 0: Binary Classification (Baseline vs Pain)
+
+**Status:** PENDING
+**Methodology:** Baseline-only (rest segments excluded)
+
+---
 
 ## Objective
-Establish binary pain classification (pain vs no-pain) baseline and discover optimal normalization strategy.
 
-**Status:** COMPLETE
-
----
-
-## Key Finding
-
-**Per-subject baseline normalization achieves 99.97% linear accuracy** on the C-H plane.
-
-| Normalization Method | Accuracy |
-|----------------------|----------|
-| Raw (none) | 87.97% |
-| Global StandardScaler | 87.45% |
-| Per-subject z-score | 97.44% |
-| **Per-subject baseline** | **99.97%** |
+Binary classification using entropy-complexity plane features to distinguish baseline from pain states.
 
 ---
 
-## How Per-Subject Baseline Normalization Works
+## Classification Task
 
-For each subject:
-1. Identify their no-pain samples (baseline + rest states)
-2. Compute mean and std of each feature from ONLY those no-pain samples
-3. Z-score ALL their samples using those baseline statistics
+| Class | Definition | Composition |
+|-------|------------|-------------|
+| 0 | Baseline | Pre-stimulus physiological baseline ONLY |
+| 1 | Pain | Low pain + High pain combined |
+
+**Note:** Rest segments are EXCLUDED from the dataset entirely.
+
+---
+
+## Data Configuration
 
 ```python
-for each subject:
-    baseline_mean = mean(features[no_pain_samples])
-    baseline_std = std(features[no_pain_samples])
-    normalized = (features - baseline_mean) / baseline_std
-```
+# Label mapping
+BINARY_CLASS_MAPPING = {
+    'baseline': 0,  # Baseline only
+    'low': 1,       # Pain
+    'high': 1       # Pain
+    # 'rest': EXCLUDED
+}
 
-This aligns all subjects to a common reference frame where no-pain = (0,0).
-
----
-
-## Best Parameters
-
-| Parameter | Value |
-|-----------|-------|
-| Signal | EDA |
-| Embedding Dimension (d) | 7 |
-| Time Delay (tau) | 2 |
-| Features | pe (H) + comp (C) |
-
----
-
-## Outputs
-
-```
-results/stage0_binary/
-├── STAGE0_FINAL_REPORT.md
-└── FINAL_ch_plane_binary.png
+# Filter data
+df = df[df['state'] != 'rest'].copy()
+df['binary_label'] = df['state'].map(lambda x: 0 if x == 'baseline' else 1)
 ```
 
 ---
 
-## Implications for Subsequent Phases
+## Features
 
-1. **Per-subject baseline normalization is REQUIRED** - apply to all phases
-2. **EDA d=7 tau=2** is optimal for this dataset
-3. **For 3-class:** Apply same normalization to all 8 entropy features
+24 entropy-complexity features (8 per signal):
+- EDA: pe, comp, fisher_shannon, fisher_info, renyipe, renyicomp, tsallispe, tsalliscomp
+- BVP: pe, comp, fisher_shannon, fisher_info, renyipe, renyicomp, tsallispe, tsalliscomp
+- RESP: pe, comp, fisher_shannon, fisher_info, renyipe, renyicomp, tsallispe, tsalliscomp
+
+---
+
+## Normalization
+
+Global z-score (StandardScaler) - proven to work in LOSO validation.
+
+**Do NOT use per-subject normalization** - causes data leakage in LOSO.
+
+---
+
+## Validation Methods
+
+1. **80/20 Split** - Quick baseline (may have subject leakage)
+2. **LOSO** - Gold standard subject-independent validation
+
+---
+
+## Expected Outcome
+
+Binary classification (baseline vs pain) should achieve higher accuracy than 3-class classification since:
+1. Only 2 classes instead of 3
+2. Pain detection shown to be reliable (90%+ in Phase 5 hierarchical Stage 1)
+
+---
+
+## Output Files
+
+- `results/stage0_binary/binary_results.csv`
+- `results/stage0_binary/confusion_matrix.png`
+- `results/stage0_binary/stage0_report.md`
+
+---
+
+## Execution
+
+```bash
+python src/stage0_binary.py
+```
+
+---
+
+*Stage 0 to be implemented. Binary classification baseline vs pain.*
