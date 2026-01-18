@@ -1,82 +1,54 @@
-# Stage 0: Binary Classification (Baseline vs Pain)
+# Stage 0: Complexity-Entropy Plane Analysis
 
-**Status:** PENDING
+**Status:** COMPLETE
 **Methodology:** Baseline-only (rest segments excluded)
 
 ---
 
 ## Objective
 
-Binary classification using entropy-complexity plane features to distinguish baseline from pain states.
+Visualize binary pain classification on the Complexity-Entropy (C-H) plane using only 2 features. No ML model required - just linear separation in 2D.
 
 ---
 
 ## Classification Task
 
-| Class | Definition | Composition |
-|-------|------------|-------------|
-| 0 | Baseline | Pre-stimulus physiological baseline ONLY |
-| 1 | Pain | Low pain + High pain combined |
+| Class | Definition |
+|-------|------------|
+| 0 | Baseline (pre-stimulus) |
+| 1 | Pain (low + high combined) |
 
-**Note:** Rest segments are EXCLUDED from the dataset entirely.
-
----
-
-## Data Configuration
-
-```python
-# Label mapping
-BINARY_CLASS_MAPPING = {
-    'baseline': 0,  # Baseline only
-    'low': 1,       # Pain
-    'high': 1       # Pain
-    # 'rest': EXCLUDED
-}
-
-# Filter data
-df = df[df['state'] != 'rest'].copy()
-df['binary_label'] = df['state'].map(lambda x: 0 if x == 'baseline' else 1)
-```
+**Rest segments:** EXCLUDED
 
 ---
 
 ## Features
 
-24 entropy-complexity features (8 per signal):
-- EDA: pe, comp, fisher_shannon, fisher_info, renyipe, renyicomp, tsallispe, tsalliscomp
-- BVP: pe, comp, fisher_shannon, fisher_info, renyipe, renyicomp, tsallispe, tsalliscomp
-- RESP: pe, comp, fisher_shannon, fisher_info, renyipe, renyicomp, tsallispe, tsalliscomp
+Only 2 features from EDA signal:
+- **H:** Permutation Entropy (pe)
+- **C:** Statistical Complexity (comp)
+
+| Parameter | Value |
+|-----------|-------|
+| Signal | EDA |
+| Dimension (d) | 7 |
+| Time Delay (tau) | 2 |
 
 ---
 
 ## Normalization
 
-Global z-score (StandardScaler) - proven to work in LOSO validation.
-
-**Do NOT use per-subject normalization** - causes data leakage in LOSO.
-
----
-
-## Validation Methods
-
-1. **80/20 Split** - Quick baseline (may have subject leakage)
-2. **LOSO** - Gold standard subject-independent validation
-
----
-
-## Expected Outcome
-
-Binary classification (baseline vs pain) should achieve higher accuracy than 3-class classification since:
-1. Only 2 classes instead of 3
-2. Pain detection shown to be reliable (90%+ in Phase 5 hierarchical Stage 1)
+Global z-score (valid for LOSO validation).
 
 ---
 
 ## Output Files
 
-- `results/stage0_binary/binary_results.csv`
-- `results/stage0_binary/confusion_matrix.png`
-- `results/stage0_binary/stage0_report.md`
+```
+results/stage0_binary/
+    ch_plane_binary.png       # Main C-H plane with decision boundary
+    ch_plane_comparison.png   # Raw vs normalized comparison
+```
 
 ---
 
@@ -88,4 +60,13 @@ python src/stage0_binary.py
 
 ---
 
-*Stage 0 to be implemented. Binary classification baseline vs pain.*
+## Results (2026-01-18)
+
+| Metric | Value |
+|--------|-------|
+| Silhouette Score | **0.8414** |
+| Linear Accuracy | **99.92%** |
+
+### Key Finding
+
+With just 2 features (H, C) and a simple linear boundary, pain states separate almost perfectly from baseline in the entropy-complexity plane. No complex ML model needed.

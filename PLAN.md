@@ -46,7 +46,7 @@ Improve pain classification accuracy beyond Paper 1's LOSO baseline using entrop
 ## Todo Checklist
 
 ### Main Pipeline (Baseline-Only)
-- [ ] Stage 0: Binary classification (Baseline vs Pain)
+- [x] Stage 0: C-H Plane Analysis - **99.92% linear** (silhouette 0.84)
 - [x] Phase 1: 80/20 ensembles - Stacked 73.8%
 - [x] Phase 2: 80/20 neural nets - Medium MLP 80.1%
 - [x] Phase 3: LOSO - RandomForest 77.2%
@@ -58,7 +58,15 @@ Improve pain classification accuracy beyond Paper 1's LOSO baseline using entrop
 
 ## Phase Results
 
-### Phase 3: LOSO (Primary Metric)
+### Stage 0: C-H Plane Analysis
+| Metric | Value |
+|--------|-------|
+| Silhouette Score | 0.8414 |
+| Linear Accuracy | 99.92% |
+
+**Features:** Just 2 (H, C) from EDA signal. No ML model - linear separation in 2D.
+
+### Phase 3: 3-Class LOSO (Primary Metric)
 | Model | LOSO Acc |
 |-------|----------|
 | RandomForest | 77.2% |
@@ -98,10 +106,11 @@ Improve pain classification accuracy beyond Paper 1's LOSO baseline using entrop
 ## Next Steps
 
 1. **Stage 0:** Binary classification using entropy-complexity plane
-2. **Phase 6:** Nested Optuna-LOSO to close the 0.8 pp gap
+2. **Beat 80/20:** Design experiment to exceed Paper 1's 79.4% (with data leakage, consistent with Paper 1)
+3. **Phase 6:** Nested Optuna-LOSO to close the 0.8 pp LOSO gap
 
 See `phases/STAGE0.md` and `phases/PHASE6.md` for details.
 
 ---
 
-**Status:** Phases 1-5 COMPLETE. Stage 0 and Phase 6 PENDING.
+**Status:** Stage 0 and Phases 1-5 COMPLETE. Phase 6 PENDING.

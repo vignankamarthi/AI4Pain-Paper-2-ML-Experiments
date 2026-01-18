@@ -1,7 +1,7 @@
 # Experiment Status Tracker
 
-**Last Updated:** 2026-01-16
-**Status:** Phases 1-5 COMPLETE, Stage 0 PENDING, Phase 6 PENDING
+**Last Updated:** 2026-01-18
+**Status:** Stage 0 COMPLETE, Phases 1-5 COMPLETE, Phase 6 PENDING
 
 ---
 
@@ -50,7 +50,7 @@
 
 | Phase | Description | Status | Best Result |
 |-------|-------------|--------|-------------|
-| Stage 0 | Binary (Baseline vs Pain) | PENDING | - |
+| Stage 0 | C-H Plane Analysis | COMPLETE | 99.92% linear (silhouette 0.84) |
 | 1 | 80/20 Ensembles | COMPLETE | 73.8% |
 | 2 | 80/20 Neural Nets | COMPLETE | 80.1% (Medium MLP) |
 | 3 | LOSO Validation | COMPLETE | 77.2% (RandomForest) |
@@ -97,6 +97,7 @@ results/
 ## Next Steps
 
 1. **Stage 0:** Binary classification (Baseline vs Pain) - entropy-complexity plane
-2. **Phase 6:** Nested Optuna-LOSO to exceed Paper 1's 78.0% LOSO
+2. **Beat 80/20:** Design experiment to exceed Paper 1's 79.4% (with data leakage, consistent with Paper 1)
+3. **Phase 6:** Nested Optuna-LOSO to exceed Paper 1's 78.0% LOSO
 
 See `phases/STAGE0.md` and `phases/PHASE6.md` for details.
