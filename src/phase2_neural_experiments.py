@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 """
-Phase 2: Neural Network Exploration
+Phase 6 Step 2: Neural Network Exploration (BASELINE-ONLY)
+
+MIRRORS Phase 2 but with baseline-only labeling:
+- Class 0: no_pain (baseline ONLY - rest segments EXCLUDED)
+- Class 1: low_pain
+- Class 2: high_pain
 
 Explores deep learning architectures (MLP variants) to capture complex feature
 interactions. Uses PyTorch with Optuna hyperparameter optimization.
 
-Triggered because Phase 1 best ensemble (74.5%) < 85% threshold.
-
 Author: Claude (AI Assistant)
-Date: 2026-01-14
+Date: 2026-01-15
 """
 
+import gc
 import os
 import re
 import json
@@ -61,17 +65,16 @@ FEATURE_COLS = ['pe', 'comp', 'fisher_shannon', 'fisher_info',
 # Paper 1 baseline
 PAPER1_BASELINE = 0.794
 
-# Paths
-PROJECT_ROOT = Path(__file__).parent.parent
+# Paths - navigate up from src/phase6/ to project root
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 DATA_DIR = PROJECT_ROOT / 'data' / 'features'
-RESULTS_DIR = PROJECT_ROOT / 'results' / 'phase2_neuralnets'
+RESULTS_DIR = PROJECT_ROOT / 'results' / 'phase6_step2_neuralnets'
 
-# Class mapping
+# Class mapping - BASELINE ONLY (rest segments EXCLUDED)
 CLASS_MAPPING = {
-    'baseline': 0,
-    'rest': 0,
-    'low': 1,
-    'high': 2
+    'baseline': 0,  # no_pain (ONLY baseline, not rest)
+    'low': 1,       # low_pain
+    'high': 2       # high_pain
 }
 CLASS_NAMES = ['no_pain', 'low_pain', 'high_pain']
 N_CLASSES = 3
@@ -83,6 +86,52 @@ MAX_EPOCHS = 300  # Increased for deeper training
 EARLY_STOP_PATIENCE = 20  # More patience for convergence
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else
                       'mps' if torch.backends.mps.is_available() else 'cpu')
+
+
+# =============================================================================
+# Checkpointing and Memory Management
+# =============================================================================
+
+def clear_memory():
+    """Clear all caches and force garbage collection to prevent memory crashes."""
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+    gc.collect()
+
+
+def load_checkpoint(results_dir):
+    """Load checkpoint if exists, return completed architectures and results."""
+    checkpoint_file = results_dir / 'checkpoint.json'
+    if checkpoint_file.exists():
+        with open(checkpoint_file, 'r') as f:
+            checkpoint = json.load(f)
+        print(f'  Loaded checkpoint: {len(checkpoint["completed"])} architectures completed')
+        return checkpoint
+    return {'completed': [], 'results': {}}
+
+
+def save_checkpoint(results_dir, completed, results):
+    """Save checkpoint after each architecture completes."""
+    # Convert results to serializable format (remove non-serializable objects)
+    serializable_results = {}
+    for name, data in results.items():
+        serializable_results[name] = {
+            'best_params': data.get('best_params', {}),
+            'metrics': {k: v for k, v in data.get('metrics', {}).items()
+                       if k not in ['confusion_matrix', 'y_true', 'y_pred']},
+        }
+
+    checkpoint = {
+        'timestamp': datetime.now().isoformat(),
+        'completed': completed,
+        'results': serializable_results
+    }
+    checkpoint_file = results_dir / 'checkpoint.json'
+    with open(checkpoint_file, 'w') as f:
+        json.dump(checkpoint, f, indent=2)
+    print(f'    [CHECKPOINT SAVED] {len(completed)} architectures completed')
 
 
 # =============================================================================
@@ -125,6 +174,12 @@ def load_all_data() -> pd.DataFrame:
         (combined['dimension'] == BEST_DIMENSION) &
         (combined['tau'] == BEST_TAU)
     ].copy()
+
+    # PHASE 6 KEY DIFFERENCE: Exclude rest segments entirely
+    n_before = len(combined)
+    combined = combined[combined['state'] != 'rest'].copy()
+    n_after = len(combined)
+    print(f"  [PHASE 6] Excluded {n_before - n_after} rest segments")
 
     # Extract subject IDs
     combined['subject_id'] = combined['segment_id'].apply(extract_subject_id)
@@ -899,58 +954,87 @@ def main():
         'Regularized MLP': (create_regularized_mlp_objective, 'RegularizedMLP'),
     }
 
-    # Results storage
+    # Load checkpoint (resume capability)
+    checkpoint = load_checkpoint(RESULTS_DIR)
+    completed_archs = set(checkpoint['completed'])
     all_results = {}
 
-    # Train each architecture
+    if completed_archs:
+        print(f'  Resuming from checkpoint: {len(completed_archs)} architectures already done')
+
+    failed_archs = []
+
+    # Train each architecture with checkpointing
     for arch_name, (objective_fn, model_class) in architectures.items():
+        # Skip already completed architectures
+        if arch_name in completed_archs:
+            print(f"\n[SKIPPED] {arch_name} - already completed")
+            continue
+
         print(f"\n{'='*60}")
         print(f"Optimizing: {arch_name}")
         print(f"{'='*60}")
 
-        # Create Optuna study
-        study = optuna.create_study(direction='maximize',
-                                   sampler=optuna.samplers.TPESampler(seed=RANDOM_SEED))
-        objective = objective_fn(X_train, y_train, input_dim)
+        # Clear memory before architecture
+        clear_memory()
 
-        study.optimize(objective, n_trials=N_OPTUNA_TRIALS, show_progress_bar=True)
+        try:
+            # Create Optuna study
+            study = optuna.create_study(direction='maximize',
+                                       sampler=optuna.samplers.TPESampler(seed=RANDOM_SEED))
+            objective = objective_fn(X_train, y_train, input_dim)
 
-        print(f"\nBest trial: {study.best_trial.value:.4f}")
-        print(f"Best params: {study.best_trial.params}")
+            study.optimize(objective, n_trials=N_OPTUNA_TRIALS, show_progress_bar=True)
 
-        # Train final model with best params
-        best_params = study.best_trial.params.copy()
-        best_params['input_dim'] = input_dim
+            print(f"\nBest trial: {study.best_trial.value:.4f}")
+            print(f"Best params: {study.best_trial.params}")
 
-        print(f"\nTraining final {arch_name} model...")
-        model, metrics, train_losses, val_accs = train_final_model(
-            model_class, best_params, X_train, y_train, X_test, y_test
-        )
+            # Train final model with best params
+            best_params = study.best_trial.params.copy()
+            best_params['input_dim'] = input_dim
 
-        print(f"Test Balanced Accuracy: {metrics['balanced_accuracy']:.4f}")
+            print(f"\nTraining final {arch_name} model...")
+            model, metrics, train_losses, val_accs = train_final_model(
+                model_class, best_params, X_train, y_train, X_test, y_test
+            )
 
-        # Save results
-        all_results[arch_name] = {
-            'model': model,
-            'metrics': metrics,
-            'best_params': best_params,
-            'train_losses': train_losses,
-            'val_accs': val_accs,
-            'study': study
-        }
+            print(f"Test Balanced Accuracy: {metrics['balanced_accuracy']:.4f}")
 
-        # Save model
-        model_path = RESULTS_DIR / 'models' / f'{model_class.lower()}_best.pth'
-        torch.save(model.state_dict(), model_path)
+            # Save results
+            all_results[arch_name] = {
+                'model': model,
+                'metrics': metrics,
+                'best_params': best_params,
+                'train_losses': train_losses,
+                'val_accs': val_accs,
+                'study': study
+            }
 
-        # Plot confusion matrix
-        plot_confusion_matrix(
-            metrics['y_true'], metrics['y_pred'], arch_name,
-            RESULTS_DIR / 'confusion_matrices' / f'{model_class.lower()}_confusion_matrix.png'
-        )
+            # Save model
+            model_path = RESULTS_DIR / 'models' / f'{model_class.lower()}_best.pth'
+            torch.save(model.state_dict(), model_path)
 
-        # Plot training curves
-        plot_training_curves(train_losses, val_accs, arch_name, RESULTS_DIR / 'training_curves')
+            # Plot confusion matrix
+            plot_confusion_matrix(
+                metrics['y_true'], metrics['y_pred'], arch_name,
+                RESULTS_DIR / 'confusion_matrices' / f'{model_class.lower()}_confusion_matrix.png'
+            )
+
+            # Plot training curves
+            plot_training_curves(train_losses, val_accs, arch_name, RESULTS_DIR / 'training_curves')
+
+            # Mark as completed and save checkpoint
+            completed_archs.add(arch_name)
+            save_checkpoint(RESULTS_DIR, list(completed_archs), all_results)
+
+        except Exception as e:
+            print(f'    [ERROR] {arch_name} failed: {str(e)}')
+            failed_archs.append({'arch': arch_name, 'error': str(e), 'timestamp': datetime.now().isoformat()})
+            with open(RESULTS_DIR / 'failed_architectures.json', 'w') as f:
+                json.dump(failed_archs, f, indent=2)
+
+        # Clear memory after architecture
+        clear_memory()
 
     # Generate leaderboards
     print("\n" + "="*70)

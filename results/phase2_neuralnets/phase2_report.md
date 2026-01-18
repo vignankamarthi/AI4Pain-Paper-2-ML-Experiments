@@ -1,17 +1,17 @@
 # Phase 2: Neural Network Exploration Results
 
-**Generated:** 2026-01-15 06:48
+**Generated:** 2026-01-16 04:25
 
 ---
 
-## Summary
+## Executive Summary
 
 | Metric | Value |
 |--------|-------|
-| **Best Neural Net** | Simple MLP |
-| **Best NN Balanced Accuracy** | 76.38% |
-| **Best Overall Model** | Simple MLP |
-| **Best Overall Balanced Acc** | 76.38% |
+| **Best Neural Net** | Medium MLP |
+| **Best NN Balanced Accuracy** | 80.05% |
+| **Best Overall Model** | Medium MLP |
+| **Best Overall Balanced Acc** | 80.05% |
 | **Paper 1 Baseline** | 79.4% |
 
 ---
@@ -36,10 +36,10 @@ Four MLP architectures were explored:
 
 | Rank | Architecture | Balanced Acc | Accuracy | F1 | No Pain | Low Pain | High Pain |
 |------|--------------|--------------|----------|-----|---------|----------|-----------|
-| 1 | Simple MLP | 76.38% | 82.32% | 0.813 | 100.00% | 87.40% | 41.73% |
-| 2 | Deep MLP | 75.85% | 81.93% | 0.819 | 100.00% | 66.93% | 60.63% |
-| 3 | Medium MLP | 75.07% | 81.34% | 0.811 | 100.00% | 73.23% | 51.97% |
-| 4 | Regularized MLP | 74.80% | 81.14% | 0.809 | 100.00% | 73.23% | 51.18% |
+| 1 | Medium MLP | 80.05% | 71.32% | 0.713 | 100.00% | 66.93% | 73.23% |
+| 2 | Regularized MLP | 80.05% | 71.32% | 0.713 | 100.00% | 71.65% | 68.50% |
+| 3 | Simple MLP | 79.79% | 70.94% | 0.709 | 100.00% | 66.93% | 72.44% |
+| 4 | Deep MLP | 79.00% | 69.81% | 0.697 | 100.00% | 61.42% | 75.59% |
 
 
 ---
@@ -48,11 +48,11 @@ Four MLP architectures were explored:
 
 | Rank | Model | Type | Balanced Acc | Accuracy |
 |------|-------|------|--------------|----------|
-| 1 | Simple MLP | neural_net | 76.38% | 82.32% |
-| 2 | Deep MLP | neural_net | 75.85% | 81.93% |
-| 3 | LightGBM | ensemble | 75.59% | 81.73% |
-| 4 | Medium MLP | neural_net | 75.07% | 81.34% |
-| 5 | Regularized MLP | neural_net | 74.80% | 81.14% |
+| 1 | Medium MLP | neural_net | 80.05% | 71.32% |
+| 2 | Regularized MLP | neural_net | 80.05% | 71.32% |
+| 3 | Simple MLP | neural_net | 79.79% | 70.94% |
+| 4 | Deep MLP | neural_net | 79.00% | 69.81% |
+| 5 | LightGBM | ensemble | 75.59% | 81.73% |
 | 6 | Stacked (RF+XGB+LGB) | ensemble | 72.97% | 79.76% |
 | 7 | XGBoost | ensemble | 72.70% | 79.57% |
 | 8 | Random Forest | ensemble | 72.70% | 79.57% |
@@ -65,11 +65,11 @@ Four MLP architectures were explored:
 
 ### Neural Net vs Ensemble Comparison
 
-**Neural networks improved by 0.79% over best ensemble!**
+**Neural networks improved by 4.46% over best ensemble!**
 
 ### Key Observations
 
-1. **Architecture Impact:** The Simple MLP architecture performed best, suggesting that simpler models generalize better on this feature space.
+1. **Architecture Impact:** The Medium MLP architecture performed best, suggesting a good balance between capacity and regularization.
 
 2. **Pain Discrimination Challenge:** All models struggle most with distinguishing
    low pain from high pain states, consistent with Phase 1 ensemble findings.
@@ -84,12 +84,12 @@ Four MLP architectures were explored:
 ### Simple MLP
 ```json
 {
-  "layer1": 512,
-  "layer2": 32,
+  "layer1": 64,
+  "layer2": 128,
   "dropout": 0.3,
-  "lr": 0.005,
-  "batch_size": 16,
-  "activation": "elu",
+  "lr": 0.001,
+  "batch_size": 32,
+  "activation": "relu",
   "input_dim": 32
 }
 ```
@@ -97,12 +97,12 @@ Four MLP architectures were explored:
 ### Medium MLP
 ```json
 {
-  "layer1": 128,
+  "layer1": 512,
   "layer2": 256,
   "layer3": 128,
   "dropout": 0.2,
   "lr": 0.001,
-  "batch_size": 16,
+  "batch_size": 32,
   "activation": "elu",
   "input_dim": 32
 }
@@ -111,14 +111,14 @@ Four MLP architectures were explored:
 ### Deep MLP
 ```json
 {
-  "layer1": 256,
-  "layer2": 128,
+  "layer1": 512,
+  "layer2": 256,
   "layer3": 64,
-  "layer4": 64,
-  "dropout": 0.5,
+  "layer4": 32,
+  "dropout": 0.3,
   "lr": 0.001,
   "batch_size": 16,
-  "activation": "elu",
+  "activation": "relu",
   "input_dim": 32
 }
 ```
@@ -126,11 +126,11 @@ Four MLP architectures were explored:
 ### Regularized MLP
 ```json
 {
-  "layer1": 512,
-  "layer2": 128,
+  "layer1": 256,
+  "layer2": 256,
   "layer3": 64,
   "dropout": 0.4,
-  "lr": 0.0001,
+  "lr": 0.0005,
   "batch_size": 16,
   "activation": "elu",
   "l2_reg": 0.1,
@@ -144,11 +144,11 @@ Four MLP architectures were explored:
 
 Based on combined results, recommend validating these models with LOSO:
 
-1. **Simple MLP** (neural_net): 76.38%
-2. **Deep MLP** (neural_net): 75.85%
-3. **LightGBM** (ensemble): 75.59%
-4. **Medium MLP** (neural_net): 75.07%
-5. **Regularized MLP** (neural_net): 74.80%
+1. **Medium MLP** (neural_net): 80.05%
+2. **Regularized MLP** (neural_net): 80.05%
+3. **Simple MLP** (neural_net): 79.79%
+4. **Deep MLP** (neural_net): 79.00%
+5. **LightGBM** (ensemble): 75.59%
 
 
 ---
