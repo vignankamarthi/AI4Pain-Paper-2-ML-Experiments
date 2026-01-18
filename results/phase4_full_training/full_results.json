@@ -1,0 +1,84 @@
+{
+  "timestamp": "2026-01-16T05:35:33.877160",
+  "optuna_trials": 50,
+  "cv_folds": 5,
+  "cv_results": [
+    {
+      "model": "LightGBM",
+      "normalization": "per_subject_baseline",
+      "cv_mean": 75.41871719160105,
+      "cv_std": 2.0153046434882627
+    },
+    {
+      "model": "LightGBM",
+      "normalization": "global_zscore",
+      "cv_mean": 68.55852570985445,
+      "cv_std": 2.389662839102816
+    },
+    {
+      "model": "LightGBM",
+      "normalization": "raw",
+      "cv_mean": 67.66408673347651,
+      "cv_std": 2.600245046041908
+    },
+    {
+      "model": "Stacked",
+      "normalization": "per_subject_baseline",
+      "cv_mean": 72.33062664041994,
+      "cv_std": 2.6065127021154484
+    },
+    {
+      "model": "Stacked",
+      "normalization": "global_zscore",
+      "cv_mean": 66.93313051777619,
+      "cv_std": 1.7359291458286623
+    },
+    {
+      "model": "Stacked",
+      "normalization": "raw",
+      "cv_mean": 66.80130786208542,
+      "cv_std": 2.9385362404133057
+    }
+  ],
+  "loso_results": [
+    {
+      "model": "LightGBM",
+      "normalization": "per_subject_baseline",
+      "loso_mean": 32.75681341719077,
+      "loso_std": 2.6079361225628364
+    },
+    {
+      "model": "LightGBM",
+      "normalization": "global_zscore",
+      "loso_mean": 64.93710691823897,
+      "loso_std": 15.724842688687104
+    },
+    {
+      "model": "LightGBM",
+      "normalization": "raw",
+      "loso_mean": 64.93710691823897,
+      "loso_std": 15.359524154933865
+    },
+    {
+      "model": "Stacked",
+      "normalization": "per_subject_baseline",
+      "loso_mean": 33.33333333333332,
+      "loso_std": 1.1102230246251565e-14
+    },
+    {
+      "model": "Stacked",
+      "normalization": "global_zscore",
+      "loso_mean": 65.72327044025158,
+      "loso_std": 14.377600902315743
+    },
+    {
+      "model": "Stacked",
+      "normalization": "raw",
+      "loso_mean": 63.88888888888887,
+      "loso_std": 13.977703452422604
+    }
+  ],
+  "n_samples": 1325,
+  "n_features": 24,
+  "n_subjects": 53
+}
