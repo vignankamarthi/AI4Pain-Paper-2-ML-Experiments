@@ -1,0 +1,6 @@
+{
+  "config": "Stacked_global_zscore",
+  "stage1_accuracy": "0.9057 +/- 0.1975",
+  "stage2_accuracy": "0.6030 +/- 0.1211",
+  "combined_3class_accuracy": "0.6724 +/- 0.1609"
+}
