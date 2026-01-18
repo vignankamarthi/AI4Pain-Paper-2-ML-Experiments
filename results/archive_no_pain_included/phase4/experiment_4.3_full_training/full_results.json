@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-01-16T01:15:10.666519",
+  "optuna_trials": 50,
+  "cv_folds": 5,
+  "cv_results": [
+    {
+      "model": "LightGBM",
+      "normalization": "per_subject_baseline",
+      "cv_mean": 75.4737757964078,
+      "cv_std": 1.4862912806775177
+    },
+    {
+      "model": "LightGBM",
+      "normalization": "global_zscore",
+      "cv_mean": 72.84849113529927,
+      "cv_std": 1.4824120808294678
+    },
+    {
+      "model": "LightGBM",
+      "normalization": "raw",
+      "cv_mean": 72.74504175029591,
+      "cv_std": 1.4267593299349166
+    },
+    {
+      "model": "Stacked",
+      "normalization": "per_subject_baseline",
+      "cv_mean": 73.5576623694097,
+      "cv_std": 1.9989454722069842
+    },
+    {
+      "model": "Stacked",
+      "normalization": "global_zscore",
+      "cv_mean": 69.7357926766507,
+      "cv_std": 2.978637809082577
+    },
+    {
+      "model": "Stacked",
+      "normalization": "raw",
+      "cv_mean": 69.9472042097679,
+      "cv_std": 1.667560764951937
+    }
+  ],
+  "loso_results": [
+    {
+      "model": "LightGBM",
+      "normalization": "per_subject_baseline",
+      "loso_mean": 35.27253668763102,
+      "loso_std": 4.094764147720046
+    },
+    {
+      "model": "LightGBM",
+      "normalization": "global_zscore",
+      "loso_mean": 71.56708595387839,
+      "loso_std": 9.039779047540076
+    },
+    {
+      "model": "LightGBM",
+      "normalization": "raw",
+      "loso_mean": 71.48846960167714,
+      "loso_std": 8.707547232903776
+    },
+    {
+      "model": "Stacked",
+      "normalization": "per_subject_baseline",
+      "loso_mean": 35.27253668763101,
+      "loso_std": 4.094764147720046
+    },
+    {
+      "model": "Stacked",
+      "normalization": "global_zscore",
+      "loso_mean": 68.29140461215931,
+      "loso_std": 7.762300456017054
+    },
+    {
+      "model": "Stacked",
+      "normalization": "raw",
+      "loso_mean": 66.1949685534591,
+      "loso_std": 8.700604295057566
+    }
+  ],
+  "n_samples": 2544,
+  "n_features": 24,
+  "n_subjects": 53,
+  "failed_experiments": []
+}

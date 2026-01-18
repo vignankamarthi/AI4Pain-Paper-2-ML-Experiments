@@ -1,0 +1,17 @@
+[
+  {
+    "config": "LightGBM_global_zscore",
+    "error": "Object of type int64 is not JSON serializable",
+    "timestamp": "2026-01-16T01:17:56.796021"
+  },
+  {
+    "config": "LightGBM_raw",
+    "error": "Object of type int64 is not JSON serializable",
+    "timestamp": "2026-01-16T01:18:56.192736"
+  },
+  {
+    "config": "Stacked_global_zscore",
+    "error": "Object of type int64 is not JSON serializable",
+    "timestamp": "2026-01-16T01:20:08.992300"
+  }
+]

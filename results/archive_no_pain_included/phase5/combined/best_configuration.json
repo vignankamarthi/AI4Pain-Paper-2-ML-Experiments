@@ -1,0 +1,6 @@
+{
+  "config": "LightGBM_global_zscore",
+  "stage1_accuracy": "0.9784 +/- 0.0495",
+  "stage2_accuracy": "0.5959 +/- 0.1262",
+  "combined_3class_accuracy": "0.7172 +/- 0.0904"
+}
