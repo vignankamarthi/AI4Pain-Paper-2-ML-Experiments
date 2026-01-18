@@ -58,3 +58,9 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+**/CLAUDE.md
+
+# Paper and reference files
+Final Paper.pdf
+catch22_ml_paper_1_source_code.py
