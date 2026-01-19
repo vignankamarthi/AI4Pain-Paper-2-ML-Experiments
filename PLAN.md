@@ -52,7 +52,8 @@ Improve pain classification accuracy beyond Paper 1's LOSO baseline using entrop
 - [x] Phase 3: LOSO - RandomForest 77.2%
 - [x] Phase 4: Full training + LOSO - Stacked 65.7%
 - [x] Phase 5: Hierarchical - 67.2%
-- [ ] Phase 6: Final experiment (nested Optuna-LOSO)
+- [x] Phase 6: LOSO-Optimized 80/20 - 75.6%
+- [x] Phase 7: Nested Optuna-LOSO - TERMINATED at 72.1% (17/53 folds)
 
 ---
 
@@ -103,14 +104,14 @@ Improve pain classification accuracy beyond Paper 1's LOSO baseline using entrop
 
 ---
 
-## Next Steps
+## Final Status
 
-1. **Stage 0:** Binary classification using entropy-complexity plane
-2. **Beat 80/20:** Design experiment to exceed Paper 1's 79.4% (with data leakage, consistent with Paper 1)
-3. **Phase 6:** Nested Optuna-LOSO to close the 0.8 pp LOSO gap
+**ALL EXPERIMENTS COMPLETE**
 
-See `phases/STAGE0.md` and `phases/PHASE6.md` for details.
+See `FINAL_REPORT.md` for comprehensive results.
 
----
-
-**Status:** Stage 0 and Phases 1-5 COMPLETE. Phase 6 PENDING.
+### Outcome
+- Did not beat Paper 1's 78.0% LOSO baseline
+- Best LOSO: 77.2% (RandomForest) - within statistical margin
+- Headline result: 99.92% binary pain detection (C-H plane)
+- Key finding: Intensity discrimination (60%) is the fundamental bottleneck

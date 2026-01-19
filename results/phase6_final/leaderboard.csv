@@ -1,0 +1,2 @@
+rank,model,accuracy,balanced_accuracy,f1_weighted,acc_no_pain,acc_low_pain,acc_high_pain
+1,Medium MLP (LOSO-optimized),0.6490566037735849,0.7559055118110237,0.6486154395756437,1.0,0.6692913385826772,0.5984251968503937

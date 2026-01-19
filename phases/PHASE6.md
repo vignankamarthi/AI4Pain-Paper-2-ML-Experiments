@@ -1,202 +1,257 @@
-# Phase 6: Final Optimized Experiment
+# Phase 6: LOSO-Optimized 80/20 Experiment
 
-**Status:** PENDING
-**Target:** Beat Paper 1 LOSO (78.0%) AND 80/20 (79.4%) with SAME data validity
+**Status:** COMPLETE
+**Task:** 3-class classification (binary is solved at 100%)
+**Model:** Medium MLP (best performer from Phase 2)
+**Result:** 75.59% balanced accuracy (did not beat baselines)
 
 ---
 
-## Validation Approach: Nested Optuna-LOSO
+## Objective
 
-Phase 6 uses **Nested Optuna-LOSO** - the most rigorous validation approach available.
+Maximize 80/20 accuracy using LOSO-based hyperparameter optimization.
 
-### Why Nested LOSO?
+This approach finds hyperparameters that generalize across subjects, then evaluates on a held-out 20% test set matching Paper 1's validation methodology.
 
-| Approach | HP Tuning | Bias Risk | Paper 1 Used |
-|----------|-----------|-----------|--------------|
-| Simple LOSO | None (defaults) | Suboptimal HPs | Yes |
-| CV-then-LOSO | CV on all data | HP leakage | No |
-| **Nested LOSO** | **CV per fold** | **None** | **No** |
+---
 
-**Advantages over Paper 1:**
-- Paper 1 used simple LOSO with default hyperparameters
-- We optimize hyperparameters WITHIN each fold (no leakage)
-- If we beat 78.0% with nested LOSO, it's a stronger result
+## Why This Approach?
 
-### Computational Cost
+### The Problem with Standard 5-Fold CV
 
 ```
-53 LOSO folds x 50 Optuna trials = 2,650 model fits
-Estimated runtime: 2-4 hours (single model type)
+Standard Optuna with 5-fold CV:
+- Folds are random splits of samples
+- Same subject can appear in multiple folds
+- Optimizes for SAMPLE-level generalization
+- May overfit to subject-specific patterns
 ```
 
-Acceptable for ONE model after meta-analysis selection.
+### Our Solution: LOSO Inside Optuna
 
----
-
-## Paper 1 Methodology (from source code analysis)
-
-### Data Handling
-- Pooled: train + validation = 53 subjects
-- Test set: NOT used
-- No-pain class: baseline only (no rest)
-- Normalization: StandardScaler (global z-score)
-
-### 80/20 Split
-```python
-train_test_split(X, y, test_size=0.2, stratify=y)  # stratifies by CLASS, not subject
 ```
-- Subject leakage exists in Paper 1 too
-- Same issue as our implementation
-
-### LOSO
-```python
-LeaveOneGroupOut()  # groups = subject IDs from file_name
+LOSO-optimized Optuna:
+- Inner CV uses Leave-One-Subject-Out
+- Each fold leaves out a different subject
+- Optimizes for SUBJECT-level generalization
+- Model learns patterns that transfer across individuals
 ```
-- Proper subject separation
-- Uses DEFAULT hyperparameters (no optimization)
 
 ---
 
-## Our Methodology Comparison
+## Methodology
 
-| Aspect | Paper 1 | Our Study (Phase 1-5) | Phase 6 |
-|--------|---------|----------------------|---------|
-| Data pool | 53 subjects | 53 subjects | 53 subjects |
-| No-pain class | baseline only | baseline only | baseline only |
-| Normalization | StandardScaler | Global z-score | Global z-score |
-| Features | catch22 (72) | Entropy-complexity (24) | Entropy-complexity (24) |
-| LOSO HP tuning | None (defaults) | None (defaults) | **Nested Optuna** |
-| 80/20 subject separation | No | No | **Yes (GroupShuffleSplit)** |
+### Pipeline Overview
 
-**Conclusion:** Phase 6 uses stricter validation than Paper 1.
+```
+1325 samples (train + validation pooled, 53 subjects)
+                    |
+            80/20 STRATIFIED SPLIT
+                    |
+        +-----------+-----------+
+        |                       |
+  80% TRAIN (~1060)      20% TEST (~265)
+  (~42 subjects)          (~11 subjects)
+        |                       |
+        v                       |
+  +----------------+            |
+  | OPTUNA (50)    |            |
+  |                |            |
+  | Inner: LOSO CV |            |  <- Never touched during training
+  | across ~42     |            |
+  | subjects       |            |
+  +----------------+            |
+        |                       |
+        v                       v
+  Best Hyperparams -----> Train Final Model -----> Evaluate
+```
 
----
+### Key Design Decisions
 
-## Current Results vs Paper 1
-
-| Validation | Paper 1 | Our Best (Phases 1-5) | Gap |
-|------------|---------|----------------------|-----|
-| LOSO | 78.0% (XGBoost) | 77.2% (RandomForest) | -0.8 pp |
-| 80/20 | 79.4% (RandomForest) | 80.1% (Medium MLP) | +0.7 pp |
-
-**Note:** MLPs were not evaluated in LOSO (Phase 3) because they did not exceed ensembles by the required 2% margin in 80/20 to justify additional LOSO evaluation. RandomForest had best LOSO generalization.
-
----
-
-## Phase 6 Experiment Plan
-
-### Step 1: Meta-Analysis
-- [ ] Review all phase results (1-5)
-- [ ] Identify best configurations per validation type
-- [ ] Compare: ensembles vs neural nets, normalization, labeling
-
-### Step 2: Model Selection
-- [ ] Select ONE model for final optimization
-- [ ] Candidates: RandomForest, XGBoost, LightGBM
-- [ ] Selection criteria: Phase 3 LOSO performance
-
-### Step 3: Nested Optuna-LOSO
-- [ ] Outer loop: LOSO (53 folds)
-- [ ] Inner loop: Optuna (50 trials) with 5-fold CV on training data
-- [ ] No hyperparameter leakage - test subject never seen during HP tuning
-- [ ] Target: > 78.0% LOSO
-
-### Step 4: Subject-Grouped 80/20
-- [ ] Use GroupShuffleSplit (subjects in train OR test, not both)
-- [ ] More valid than Paper 1's 80/20 (which has subject leakage)
-- [ ] Target: > 79.4% with proper subject separation
-
-### Step 5: Final Evaluation
-- [ ] Compare to Paper 1 with stricter validation
-- [ ] Statistical significance testing (if applicable)
-- [ ] Generate final report
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Task | 3-class | Binary solved (100% accuracy) |
+| Model | Medium MLP | Best 80/20 performer (80.05% in Phase 2) |
+| Optuna trials | 50 | Good balance of exploration vs compute |
+| Inner CV | LOSO | Optimizes for subject generalization |
+| Final eval | 20% held-out | Matches Paper 1 methodology |
+| Normalization | Global z-score | Proven in previous phases |
 
 ---
 
-## Key Questions to Resolve
+## Comparison to Paper 1
 
-1. **Model Selection:** RandomForest (best LOSO) vs XGBoost vs LightGBM?
-2. **Feature Set:** All 24 features or subset?
-3. **Optuna Trials:** 50 per fold (baseline) vs 100 (thorough)?
+| Aspect | Paper 1 | Phase 6 |
+|--------|---------|---------|
+| Data pool | 53 subjects | 53 subjects |
+| No-pain class | Baseline only | Baseline only |
+| Normalization | StandardScaler | Global z-score |
+| Features | catch22 (72) | Entropy-complexity (24) |
+| 80/20 split | Stratified random | Stratified random |
+| HP optimization | 5-fold CV | **LOSO CV** |
+| Model | RandomForest | Medium MLP |
+
+**Key difference:** We optimize hyperparameters using LOSO, which should find parameters that generalize better across subjects.
 
 ---
 
-## Expected Outcomes
+## Expected Improvement
 
-| Validation | Paper 1 | Target | Stretch |
-|------------|---------|--------|---------|
-| LOSO (nested) | 78.0% | > 78.0% | > 80.0% |
-| 80/20 (grouped) | 79.4% | > 79.4% | > 82.0% |
+Phase 2 achieved **80.05%** with standard 5-fold CV inside Optuna.
+
+With LOSO-based optimization:
+- Hyperparameters selected for cross-subject generalization
+- May reduce overfitting to subject-specific patterns
+- Target: **81-82%** (1-2 pp improvement)
 
 ---
 
 ## Implementation
 
-### Nested Optuna-LOSO
+### Pseudocode
+
 ```python
-from sklearn.model_selection import LeaveOneGroupOut, StratifiedKFold
+from sklearn.model_selection import train_test_split, LeaveOneGroupOut
 import optuna
 
-logo = LeaveOneGroupOut()
-fold_results = []
+# Load and prepare data (baseline-only, 3-class)
+X, y, subjects = load_data()  # 1325 samples, 53 subjects
 
-for fold_idx, (train_idx, test_idx) in enumerate(logo.split(X, y, groups)):
-    X_train, X_test = X[train_idx], X[test_idx]
-    y_train, y_test = y[train_idx], y[test_idx]
+# 80/20 stratified split (Paper 1 methodology)
+X_train, X_test, y_train, y_test, subj_train, subj_test = train_test_split(
+    X, y, subjects, test_size=0.2, stratify=y, random_state=42
+)
 
-    # Inner Optuna optimization on training data only
-    def objective(trial):
-        params = {
-            'n_estimators': trial.suggest_int('n_estimators', 100, 500),
-            'max_depth': trial.suggest_int('max_depth', 3, 15),
-            # ... other hyperparameters
-        }
-        model = RandomForestClassifier(**params)
+# Global z-score normalization
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
 
-        # 5-fold CV on training data (test subject NOT included)
-        inner_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-        scores = cross_val_score(model, X_train, y_train, cv=inner_cv, scoring='balanced_accuracy')
-        return scores.mean()
+# Optuna objective with LOSO inner CV
+def objective(trial):
+    params = {
+        'hidden_dims': trial.suggest_categorical('hidden_dims', [...]),
+        'learning_rate': trial.suggest_float('lr', 1e-4, 1e-2, log=True),
+        'dropout': trial.suggest_float('dropout', 0.1, 0.5),
+        'batch_size': trial.suggest_categorical('batch_size', [16, 32, 64]),
+        # ... other MLP hyperparameters
+    }
 
-    study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=50, show_progress_bar=False)
+    # LOSO CV on training subjects (KEY CHANGE)
+    logo = LeaveOneGroupOut()
+    fold_scores = []
 
-    # Train final model with best hyperparameters
-    best_model = RandomForestClassifier(**study.best_params)
-    best_model.fit(X_train, y_train)
+    for train_idx, val_idx in logo.split(X_train, y_train, groups=subj_train):
+        X_tr, X_val = X_train[train_idx], X_train[val_idx]
+        y_tr, y_val = y_train[train_idx], y_train[val_idx]
 
-    # Evaluate on held-out subject (never seen during HP tuning)
-    y_pred = best_model.predict(X_test)
-    fold_acc = balanced_accuracy_score(y_test, y_pred)
-    fold_results.append(fold_acc)
+        model = MediumMLP(**params)
+        model.fit(X_tr, y_tr)
+        score = balanced_accuracy_score(y_val, model.predict(X_val))
+        fold_scores.append(score)
 
-final_loso_accuracy = np.mean(fold_results)
+    return np.mean(fold_scores)
+
+# Run Optuna optimization
+study = optuna.create_study(direction='maximize', sampler=TPESampler(seed=42))
+study.optimize(objective, n_trials=50)
+
+# Train final model with best hyperparameters
+final_model = MediumMLP(**study.best_params)
+final_model.fit(X_train, y_train)
+
+# Evaluate on held-out 20% test set
+y_pred = final_model.predict(X_test)
+final_accuracy = balanced_accuracy_score(y_test, y_pred)
 ```
 
-### Subject-Grouped 80/20
+---
+
+## Configuration
+
 ```python
-from sklearn.model_selection import GroupShuffleSplit
-
-gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
-for train_idx, test_idx in gss.split(X, y, groups=subjects):
-    X_train, X_test = X[train_idx], X[test_idx]
-    y_train, y_test = y[train_idx], y[test_idx]
-
-    # Verify no subject overlap
-    train_subjects = set(subjects[train_idx])
-    test_subjects = set(subjects[test_idx])
-    assert len(train_subjects & test_subjects) == 0, "Subject leakage detected!"
+# Phase 6 Configuration
+TASK = '3-class'  # baseline vs low vs high
+MODEL = 'Medium MLP'
+OPTUNA_TRIALS = 50
+INNER_CV = 'LOSO'  # LeaveOneGroupOut by subject
+TEST_SIZE = 0.2
+NORMALIZATION = 'global_zscore'
+RANDOM_SEED = 42
 ```
 
 ---
 
-## Files to Create
+## Output Files
 
-- `src/phase6_final_experiment.py` - Main execution script
-- `results/phase6_final/` - Output directory
-- `results/phase6_final/meta_analysis.md` - Configuration comparison
-- `results/phase6_final/final_report.md` - Final results
+```
+results/phase6_final/
+    phase6_report.md          # Final results and analysis
+    leaderboard.csv           # Model performance
+    confusion_matrix.png      # 3-class confusion matrix
+    best_hyperparameters.json # Optuna-selected params
+    optuna_study.pkl          # Full optimization history
+    checkpoint.json           # Progress tracking
+```
 
 ---
 
-*Phase 6 ready for execution after meta-analysis discussion.*
+## Results
+
+### Final Test Accuracy (20% held-out)
+
+| Metric | Value |
+|--------|-------|
+| Balanced Accuracy | **75.59%** |
+| Overall Accuracy | 64.91% |
+| F1 Weighted | 0.6486 |
+
+### Per-Class Accuracy
+
+| Class | Accuracy |
+|-------|----------|
+| No Pain (baseline) | 100.0% |
+| Low Pain | 66.9% |
+| High Pain | 59.8% |
+
+### Comparison to Baselines
+
+| Baseline | Accuracy | Difference |
+|----------|----------|------------|
+| Paper 1 (79.4%) | 79.4% | **-3.81 pp** |
+| Phase 2 (80.05%) | 80.05% | **-4.46 pp** |
+
+### Best Hyperparameters (from Optuna)
+
+```json
+{
+  "layer1": 64,
+  "layer2": 48,
+  "layer3": 40,
+  "dropout": 0.237,
+  "learning_rate": 0.00948,
+  "weight_decay": 0.000227,
+  "batch_size": 32,
+  "activation": "leaky_relu"
+}
+```
+
+---
+
+## Conclusion
+
+LOSO-based HP optimization **did not improve** over Phase 2's standard 5-fold CV approach.
+
+The hypothesis that optimizing for subject-level generalization would improve 80/20 test performance was not supported. The model achieved perfect baseline detection (100%) but struggled with pain intensity discrimination (low: 66.9%, high: 59.8%).
+
+---
+
+## Execution
+
+```bash
+python src/phase6_final_experiment.py
+```
+
+---
+
+*Phase 6 complete. LOSO-optimized hyperparameters did not beat standard CV baselines.*

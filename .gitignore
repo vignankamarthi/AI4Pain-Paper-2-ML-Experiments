@@ -59,6 +59,12 @@ Thumbs.db
 *.log
 logs/
 
+# Experiment checkpoints and intermediate files
+**/checkpoint.json
+**/fold_*.json
+**/best_hyperparameters.json
+**/fold_results/
+
 **/CLAUDE.md
 
 # Paper and reference files
