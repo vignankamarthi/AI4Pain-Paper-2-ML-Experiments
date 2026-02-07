@@ -1,7 +1,7 @@
 # Experiment Status Tracker
 
-**Last Updated:** 2026-01-18
-**Status:** ALL EXPERIMENTS COMPLETE - See FINAL_REPORT.md
+**Last Updated:** 2026-02-06
+**Status:** Phases 1-7 COMPLETE. Phase 8 (Cluster Experiments) READY_TO_RUN.
 
 ---
 
@@ -74,6 +74,9 @@ See `results/stage0_binary/` for full analysis.
 | 5 | Hierarchical | COMPLETE | 67.2% |
 | 6 | LOSO-Optimized 80/20 | COMPLETE | 75.6% (did not beat baselines) |
 | 7 | Nested Optuna-LOSO | TERMINATED | 72.1% (17/53 folds) |
+| 8.1 | Raw Signal Deep Learning | READY_TO_RUN | -- (cluster) |
+| 8.2 | Feature Fusion (catch22+entropy) | READY_TO_RUN | -- (cluster) |
+| 8.3 | Nested LOSO Completion | READY_TO_RUN | -- (cluster) |
 
 ---
 
@@ -120,6 +123,9 @@ results/
   phase5_hierarchical/        # Hierarchical
   phase6_final/               # LOSO-optimized 80/20 (Phase 6)
   phase7_nested_loso/         # Nested Optuna-LOSO (Phase 7)
+  phase8_1_raw_signal_dl/     # [Cluster] Raw signal DL (Phase 8.1)
+  phase8_2_feature_fusion/    # [Cluster] Feature fusion (Phase 8.2)
+  phase8_3_nested_loso/       # [Cluster] Nested LOSO completion (Phase 8.3)
   archive_no_pain_included/   # Old methodology (deprecated)
 ```
 
@@ -127,7 +133,7 @@ results/
 
 ## Conclusion
 
-**All experiments complete.** See `FINAL_REPORT.md` for comprehensive results summary.
+Phases 1-7 complete. Phase 8 experiments ready for cluster execution. See `phases/phase8/PHASE8.md` for details and `phases/phase8/TASK.md` for execution guide.
 
 ### Summary
 - **Best LOSO:** 77.2% (RandomForest) - 0.8 pp below Paper 1's 78.0%

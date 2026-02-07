@@ -55,6 +55,11 @@ Improve pain classification accuracy beyond Paper 1's LOSO baseline using entrop
 - [x] Phase 6: LOSO-Optimized 80/20 - 75.6%
 - [x] Phase 7: Nested Optuna-LOSO - TERMINATED at 72.1% (17/53 folds)
 
+### Cluster Experiments (Phase 8)
+- [ ] Phase 8.1: Raw Signal Deep Learning (1D-CNN/BiLSTM/Transformer on raw waveforms, H100 GPU)
+- [ ] Phase 8.2: Feature Fusion (catch22 72 + entropy-complexity 24 = 96 features, LOSO)
+- [ ] Phase 8.3: Nested LOSO Completion (Phase 7 to all 65 folds, 128GB memory)
+
 ---
 
 ## Phase Results
@@ -106,9 +111,9 @@ Improve pain classification accuracy beyond Paper 1's LOSO baseline using entrop
 
 ## Final Status
 
-**ALL EXPERIMENTS COMPLETE**
+**Phases 1-7 COMPLETE. Phase 8 READY_TO_RUN (cluster).**
 
-See `FINAL_REPORT.md` for comprehensive results.
+See `FINAL_REPORT.md` for Phases 1-7 results. See `phases/phase8/PHASE8.md` for Phase 8 specs.
 
 ### Outcome
 - Did not beat Paper 1's 78.0% LOSO baseline
