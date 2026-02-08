@@ -87,6 +87,14 @@ DATA_DIR = PROJECT_ROOT / 'data'
 FEATURES_DIR = DATA_DIR / 'features'
 RESULTS_DIR = PROJECT_ROOT / 'results' / 'phase8_2_feature_fusion'
 
+# Signal directory name mapping (filesystem uses mixed case)
+SIGNAL_DIR_MAP = {
+    'eda': 'Eda',
+    'bvp': 'Bvp',
+    'resp': 'Resp',
+    'spo2': 'SpO2'
+}
+
 # Class mapping - BASELINE ONLY (rest segments EXCLUDED)
 CLASS_MAPPING = {
     'baseline': 0,
@@ -218,7 +226,7 @@ def load_raw_signal_segments(signal_type: str, split: str) -> pd.DataFrame:
     pd.DataFrame
         DataFrame with columns: segment_id, catch22_1, catch22_2, ..., catch22_22
     """
-    signal_dir = DATA_DIR / split / signal_type.capitalize()
+    signal_dir = DATA_DIR / split / SIGNAL_DIR_MAP[signal_type]
 
     all_segments = []
 

@@ -13,6 +13,7 @@ Phases 1-7 ran locally and established:
 - 3-class LOSO peaked at 77.2% with 24 entropy-complexity features
 - Pain intensity discrimination (low vs high) at 58-60% is the bottleneck
 - Phase 7 (nested LOSO) terminated at 17/53 folds due to OOM (exit 137)
+- Only 53 subjects have labels (train=41, validation=12); test set (12) has unknown labels
 
 Local compute is insufficient for the three approaches most likely to break the ceiling.
 

@@ -8,7 +8,7 @@
 
 ## Objective
 
-Phase 7 (Nested Optuna-LOSO) was terminated at 17/53 folds (72.1% mean accuracy) after three OOM kills (exit code 137) on local hardware. The cluster provides 128GB memory and SLURM-managed resources. Run the same experiment to completion for a definitive nested validation result.
+Phase 7 (Nested Optuna-LOSO) was terminated at 17/53 folds (72.1% mean accuracy) after three OOM kills (exit code 137) on local hardware. The cluster provides 128GB memory and SLURM-managed resources. Run the same experiment to completion on all 53 subjects (train + validation; test set excluded due to unknown labels) for a definitive nested validation result.
 
 ---
 
@@ -18,15 +18,15 @@ Identical to Phase 7:
 
 | Parameter | Value |
 |-----------|-------|
-| Data | All 65 subjects pooled |
+| Data | Train + Validation subjects pooled (test set excluded -- no labels) |
 | Labels | 3-class (baseline=0, low=1, high=2) |
 | Features | 24 entropy-complexity features |
 | Normalization | Global z-score |
 | Model | RandomForest |
-| Outer CV | LOSO (65 folds) |
-| Inner CV | LOSO (64 folds per Optuna trial) |
+| Outer CV | LOSO (53 folds) |
+| Inner CV | LOSO (52 folds per Optuna trial) |
 | Optuna trials | 50 per outer fold |
-| Total model fits | 65 x 50 x 64 = 208,000 |
+| Total model fits | 53 x 50 x 52 = 137,800 |
 
 ---
 
@@ -43,19 +43,19 @@ Identical to Phase 7:
 ## Methodology
 
 ```
-For each outer fold s in [1..65]:
+For each outer fold s in [1..53]:
     1. Hold out subject s as test set
-    2. Train pool = remaining 64 subjects
+    2. Train pool = remaining 52 subjects
     3. Run Optuna (50 trials):
         For each trial:
             a. Suggest hyperparameters
-            b. Inner LOSO on 64 subjects
+            b. Inner LOSO on 52 subjects
             c. Return mean inner score to Optuna
-    4. Train final model on 64 subjects with best params
+    4. Train final model on 52 subjects with best params
     5. Evaluate on held-out subject s
     6. Save fold result and checkpoint
 
-Final LOSO accuracy = mean(65 fold accuracies)
+Final LOSO accuracy = mean(53 fold accuracies)
 ```
 
 ---
@@ -105,10 +105,10 @@ Based on Phase 7 partial results (17/53 folds, 72.1% and declining trend), the f
 
 | Metric | Target | Expected |
 |--------|--------|----------|
-| Completion | All 65 folds | Phase 7 stopped at 17 |
+| Completion | All 53 folds | Phase 7 stopped at 17 |
 | 3-Class LOSO | > 78.0% (stretch) | 70-73% (realistic) |
 
-Even if below 78.0%, completion is valuable: it gives a proper nested CV estimate and demonstrates the cost of rigorous validation vs optimistic single-split results.
+Even if below 78.0%, completion is valuable: it gives a proper nested CV estimate across all 53 labeled subjects and demonstrates the cost of rigorous validation vs optimistic single-split results.
 
 ---
 

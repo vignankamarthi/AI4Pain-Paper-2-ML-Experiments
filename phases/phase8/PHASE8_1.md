@@ -23,8 +23,9 @@ Raw physiological signals from the AI4Pain dataset:
 | Resp | data/{split}/Resp/{subject_id}.csv | Time-series CSV |
 | SpO2 | data/{split}/Spo2/{subject_id}.csv | Time-series CSV |
 
-- Splits: train (41), validation (12), test (12) -- pooled for LOSO
-- Total: 65 subjects
+- Splits: train (41), validation (12) -- pooled for LOSO
+- Test set (12) excluded (unknown labels)
+- Total: 53 subjects
 - Labels: baseline (0), low pain (1), high pain (2)
 - Rest segments EXCLUDED from no-pain class
 
@@ -75,7 +76,7 @@ Input: (batch, 4_channels, window_length)
 
 - Trials: 50 per architecture
 - Inner CV: 5-fold stratified (LOSO too expensive for DL inner loop)
-- Outer CV: LOSO (65 folds)
+- Outer CV: LOSO (53 folds)
 
 ---
 
@@ -84,7 +85,7 @@ Input: (batch, 4_channels, window_length)
 | Level | Method | Purpose |
 |-------|--------|---------|
 | HP Selection | 5-fold stratified CV | Fast inner loop for Optuna |
-| Final Evaluation | LOSO (65 folds) | Subject-independent comparison to Paper 1 |
+| Final Evaluation | LOSO (53 folds) | Subject-independent comparison to Paper 1 |
 
 ---
 

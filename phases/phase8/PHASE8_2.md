@@ -8,7 +8,7 @@
 
 ## Objective
 
-Merge catch22 features (72, from Paper 1) with entropy-complexity features (24, from this study) into a 96-feature representation. Run LOSO validation with ensemble models and Optuna. Apply feature selection to manage the increased dimensionality relative to 65 subjects.
+Merge catch22 features (88: 22 features x 4 signals) with entropy-complexity features (24, from this study) into a 112-feature representation. Note: Paper 1 reported 72 catch22 features from a different extraction configuration. Run LOSO validation with ensemble models and Optuna. Apply feature selection to manage the increased dimensionality relative to 53 labeled subjects.
 
 ---
 
@@ -17,8 +17,8 @@ Merge catch22 features (72, from Paper 1) with entropy-complexity features (24, 
 | Feature Set | Count | Source | Status |
 |-------------|-------|--------|--------|
 | Entropy-Complexity | 24 | data/features/*.csv | Pre-extracted (Rust pipeline) |
-| catch22 | 72 | Extract from raw signals | Requires pycatch22 |
-| **Combined** | **96** | Merged by subject + segment | To be created |
+| catch22 | 88 (22 per signal x 4 signals) | Extract from raw signals | Requires pycatch22 |
+| **Combined** | **112** | Merged by subject + segment | To be created |
 
 ### catch22 Extraction
 
@@ -38,9 +38,9 @@ Extract from the same raw signal windows used by the Rust feature extraction pip
 
 | Experiment | Features | Purpose |
 |------------|----------|---------|
-| A | catch22 only (72) | Reproduce Paper 1 baseline with our validation |
+| A | catch22 only (88) | Reproduce Paper 1 baseline with our validation |
 | B | Entropy-complexity only (24) | Confirm Phase 3 result (77.2%) |
-| C | Combined (96) | Test complementarity hypothesis |
+| C | Combined (112) | Test complementarity hypothesis |
 | D | Selected subset (top-K by MI) | Reduce overfitting from high dimensionality |
 
 All four experiments use the same models, Optuna config, and LOSO folds for direct comparison.
@@ -61,9 +61,9 @@ All optimized with Optuna (50 trials, TPE sampler, 5-fold stratified inner CV).
 
 ## Feature Selection Strategy
 
-With 96 features on 65 subjects, overfitting is a real risk. Two strategies:
+With 112 features on 53 subjects, overfitting is a real risk. Two strategies:
 
-1. **Mutual Information filter:** Pre-rank features by MI with target. Evaluate top-K subsets (K = 10, 20, 30, 50, 72, 96).
+1. **Mutual Information filter:** Pre-rank features by MI with target. Evaluate top-K subsets (K = 10, 20, 30, 50, 88, 112).
 2. **Optuna feature selection:** Include `feature_set` and `top_k` as Optuna hyperparameters so the optimizer jointly selects features and model params.
 
 ---
@@ -75,7 +75,7 @@ Standard ensemble search spaces (same as Phase 1/3), plus:
 | Parameter | Range | Type |
 |-----------|-------|------|
 | feature_set | {catch22, entropy, combined, selected} | categorical |
-| top_k_features | {10, 20, 30, 50, 72, 96} | int (when selected) |
+| top_k_features | {10, 20, 30, 50, 88, 112} | int (when selected) |
 
 ---
 
@@ -84,7 +84,7 @@ Standard ensemble search spaces (same as Phase 1/3), plus:
 | Level | Method |
 |-------|--------|
 | HP Selection | 5-fold stratified CV |
-| Final Evaluation | LOSO (65 folds) |
+| Final Evaluation | LOSO (53 folds) |
 
 ---
 
@@ -117,7 +117,7 @@ results/phase8_2_feature_fusion/
 | Metric | Target | Baseline |
 |--------|--------|----------|
 | Combined LOSO (any model) | > 78.0% | 77.2% (entropy-only) |
-| catch22-only LOSO | ~78.0% | Paper 1 reference |
+| catch22-only LOSO (88 features) | ~78.0% | Paper 1 reference |
 | Selected subset LOSO | > 78.0% | Best of any subset |
 
 ---

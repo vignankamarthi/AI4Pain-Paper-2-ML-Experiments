@@ -29,7 +29,7 @@ if [ -f "$CHECKPOINT" ]; then
     echo "Resuming from checkpoint ($(python3 -c "import json; d=json.load(open('$CHECKPOINT')); print(len(d.get('completed_folds', [])))" 2>/dev/null || echo '?') folds complete)..."
     python3 src/phase8_3_nested_loso.py --resume
 else
-    echo "Starting fresh (65 folds, ~208K model fits)..."
+    echo "Starting fresh (53 folds, ~138K model fits)..."
     python3 src/phase8_3_nested_loso.py
 fi
 

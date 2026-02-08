@@ -62,13 +62,24 @@ Do NOT run `import torch` on the login node -- it hangs. Torch is verified at jo
 
 ## Step 4: Upload Data
 
-From your local machine:
+Upload data manually through the Open OnDemand web interface (do NOT use scp):
+
+1. Go to **Open OnDemand** > **Files** > **Home Directory**
+2. Navigate to `~/ondemand/ai4pain-ml-loop/data/`
+3. Create subdirectories if they don't exist: `features/`, `train/`, `validation/`, `test/`
+4. Use the **Upload** button to upload each directory's contents:
+   - `data/features/` -- 12 CSV files (`results_{split}_{signal}.csv`)
+   - `data/train/` -- Raw signal subdirectories (`Bvp/`, `Eda/`, `Resp/`, `SpO2/`)
+   - `data/validation/` -- Same structure as train
+   - `data/test/` -- Same structure as train (needed for Phase 8.1 raw signal loading)
+
+**Note:** For large uploads, you can zip directories locally and upload the zip, then unzip on the cluster shell:
 
 ```bash
-scp -r data/features/ <user>@explorer.rc.northeastern.edu:~/ondemand/ai4pain-ml-loop/data/features/
-scp -r data/train/ <user>@explorer.rc.northeastern.edu:~/ondemand/ai4pain-ml-loop/data/train/
-scp -r data/validation/ <user>@explorer.rc.northeastern.edu:~/ondemand/ai4pain-ml-loop/data/validation/
-scp -r data/test/ <user>@explorer.rc.northeastern.edu:~/ondemand/ai4pain-ml-loop/data/test/
+cd ~/ondemand/ai4pain-ml-loop/data
+unzip features.zip
+unzip train.zip
+# etc.
 ```
 
 If data already exists on the cluster from a prior project, symlink instead:
@@ -97,7 +108,7 @@ All three experiments are independent. Run in any order or simultaneously.
 sbatch cluster/phase8_3.sbatch
 ```
 
-Completes the nested Optuna-LOSO experiment to all 65 folds. CPU-only, 128GB memory. Resubmit on wall-time kill -- auto-resumes from checkpoint.
+Completes the nested Optuna-LOSO experiment to all 53 folds. CPU-only, 128GB memory. Resubmit on wall-time kill -- auto-resumes from checkpoint.
 
 ### Phase 8.2: Feature Fusion
 
