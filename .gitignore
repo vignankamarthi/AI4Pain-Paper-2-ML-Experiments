@@ -65,7 +65,11 @@ logs/
 **/best_hyperparameters.json
 **/fold_results/
 
+# Agentic System Artifacts
 **/CLAUDE.md
+**/ANTIPATTERNS.md
+**/MEMORY.md
+
 
 # Paper and reference files
 AI_Special_Issue_on_Biosensing/
